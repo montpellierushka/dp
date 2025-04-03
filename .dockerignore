@@ -1,0 +1,30 @@
+# Игнорируем node_modules
+node_modules
+npm-debug.log
+
+# Игнорируем Git
+.git
+.gitignore
+
+# Игнорируем Docker файлы
+Dockerfile
+.dockerignore
+
+# Игнорируем системные файлы
+.DS_Store
+.env.local
+.env.*.local
+
+# Игнорируем временные файлы
+.temp
+.tmp
+
+# Игнорируем тестовые файлы
+coverage
+*.test.js
+*.spec.js
+
+# Игнорируем документацию
+docs
+*.md
+!README.md 
