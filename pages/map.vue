@@ -70,6 +70,62 @@
           </div>
         </div>
         
+        <!-- Фильтры для десктопа -->
+        <div class="hidden lg:block mb-4 sm:mb-6">
+          <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+            <div class="grid grid-cols-4 gap-4 sm:gap-6">
+              <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Страна</label>
+                <select 
+                  v-model="selectedCountry"
+                  class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                >
+                  <option value="">Все страны</option>
+                  <option v-for="country in countries" :key="country" :value="country">
+                    {{ country }}
+                  </option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Теги</label>
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    v-for="tag in tags" 
+                    :key="tag"
+                    class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full cursor-pointer hover:bg-gray-200"
+                    :class="{ 'bg-gray-800 text-white': selectedTags.includes(tag) }"
+                    @click="toggleTag(tag)"
+                  >
+                    {{ tag }}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Мин. время</label>
+                <input
+                  v-model="minTime"
+                  type="number"
+                  min="0"
+                  class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                />
+              </div>
+              
+              <div>
+                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Макс. время</label>
+                <input
+                  v-model="maxTime"
+                  type="number"
+                  min="0"
+                  class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Карта -->
         <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 h-[400px] sm:h-[500px] md:h-[600px]">
           <RecipeMap :recipes="filteredRecipes" />
         </div>

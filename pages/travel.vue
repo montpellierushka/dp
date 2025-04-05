@@ -15,12 +15,20 @@
         <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-base sm:text-lg font-medium text-gray-900">Маршруты</h2>
-            <button 
-              @click="showFilters = !showFilters"
-              class="text-gray-400 hover:text-gray-500"
-            >
-              <Icon :name="showFilters ? 'chevron-up' : 'chevron-down'" class="w-5 h-5" />
-            </button>
+            <div class="flex items-center space-x-2">
+              <button 
+                @click="showAddRouteModal = true"
+                class="px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors text-xs sm:text-sm"
+              >
+                Создать
+              </button>
+              <button 
+                @click="showFilters = !showFilters"
+                class="text-gray-400 hover:text-gray-500"
+              >
+                <Icon :name="showFilters ? 'chevron-up' : 'chevron-down'" class="w-5 h-5" />
+              </button>
+            </div>
           </div>
           
           <div v-if="showFilters" class="space-y-3">
