@@ -2,12 +2,12 @@
   <div class="min-h-screen bg-gray-50 flex flex-col">
     <AppHeader />
     
-    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+    <main class="flex-grow container mx-auto py-6 sm:py-8 lg:py-12">
       <slot />
     </main>
 
     <footer class="bg-white border-t border-gray-200 mt-auto">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+      <div class="container mx-auto py-4 sm:py-6">
         <div class="text-center text-gray-500 text-xs sm:text-sm">
           © 2024 CulinaryPassport. Все права защищены.
         </div>

@@ -1,134 +1,162 @@
 <template>
-  <div>
-    <main class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
-      <div class="py-4 sm:py-6">
-        <!-- Заголовок и кнопки -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-4 sm:mb-6">
-          <h1 class="text-2xl sm:text-3xl font-light text-gray-900">{{ recipe.title }}</h1>
-          <div class="flex gap-2 sm:gap-3">
-            <button
-              @click="toggleFavorite"
-              class="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
-            >
-              <Icon :name="isFavorite ? 'heart-solid' : 'heart'" class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              {{ isFavorite ? 'В избранном' : 'В избранное' }}
-            </button>
-            <NuxtLink
-              :to="`/recipes/${recipe.id}/edit`"
-              class="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
-            >
-              <Icon name="pencil" class="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              Редактировать
-            </NuxtLink>
+  <PageContainer>
+    <template #header>
+      <PageTitle
+        :title="recipe.title"
+        :description="recipe.description"
+      />
+    </template>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Основная информация -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Изображение -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="aspect-w-16 aspect-h-9">
+            <img :src="recipe.image" :alt="recipe.title" class="rounded-lg object-cover" />
           </div>
         </div>
 
-        <!-- Основная информация -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <!-- Изображение -->
-          <div class="relative aspect-video rounded-lg overflow-hidden">
-            <img
-              :src="recipe.image"
-              :alt="recipe.title"
-              class="w-full h-full object-cover"
-            />
-          </div>
-
-          <!-- Детали рецепта -->
-          <div class="space-y-4 sm:space-y-6">
-            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-              <h2 class="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4">Описание</h2>
-              <p class="text-gray-600 text-sm sm:text-base">{{ recipe.description }}</p>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-              <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 text-center">
-                <Icon name="clock" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 mx-auto mb-2 sm:mb-3" />
-                <p class="text-gray-500 text-sm sm:text-base">{{ recipe.cookingTime }} мин</p>
-              </div>
-              <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 text-center">
-                <Icon name="map-marker" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 mx-auto mb-2 sm:mb-3" />
-                <p class="text-gray-500 text-sm sm:text-base">{{ recipe.country }}</p>
-              </div>
-              <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4 text-center">
-                <Icon name="tag" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 mx-auto mb-2 sm:mb-3" />
-                <div class="flex flex-wrap justify-center gap-1 sm:gap-2">
-                  <span
-                    v-for="tag in recipe.tags"
-                    :key="tag"
-                    class="text-xs sm:text-sm text-gray-500"
-                  >{{ tag }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <!-- Ингредиенты -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <h2 class="text-xl font-medium text-gray-900 mb-4">Ингредиенты</h2>
+          <ul class="space-y-2">
+            <li 
+              v-for="(amount, ingredient) in recipe.ingredients" 
+              :key="ingredient"
+              class="flex items-center justify-between"
+            >
+              <span class="text-gray-900">{{ ingredient }}</span>
+              <span class="text-gray-500">{{ amount }}</span>
+            </li>
+          </ul>
         </div>
 
-        <!-- Ингредиенты и шаги -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Ингредиенты -->
-          <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-            <h2 class="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4">Ингредиенты</h2>
-            <ul class="space-y-2 sm:space-y-3">
-              <li
-                v-for="(ingredient, index) in recipe.ingredients"
-                :key="index"
-                class="flex items-center gap-2 sm:gap-3"
-              >
-                <Icon name="check" class="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-                <span class="text-gray-600 text-sm sm:text-base">{{ ingredient }}</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Шаги приготовления -->
-          <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-            <h2 class="text-lg sm:text-xl font-medium text-gray-900 mb-3 sm:mb-4">Шаги приготовления</h2>
-            <ol class="space-y-3 sm:space-y-4">
-              <li
-                v-for="(step, index) in recipe.steps"
-                :key="index"
-                class="flex gap-3 sm:gap-4"
-              >
-                <span class="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-sm sm:text-base">
-                  {{ index + 1 }}
-                </span>
-                <p class="text-gray-600 text-sm sm:text-base">{{ step }}</p>
-              </li>
-            </ol>
-          </div>
+        <!-- Инструкции -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <h2 class="text-xl font-medium text-gray-900 mb-4">Инструкции</h2>
+          <ol class="space-y-4">
+            <li 
+              v-for="(step, index) in recipe.instructions" 
+              :key="index"
+              class="flex"
+            >
+              <span class="flex-shrink-0 w-8 h-8 bg-gray-800 text-white rounded-full flex items-center justify-center mr-4">
+                {{ index + 1 }}
+              </span>
+              <span class="text-gray-600">{{ step }}</span>
+            </li>
+          </ol>
         </div>
       </div>
-    </main>
-  </div>
+
+      <!-- Боковая панель -->
+      <div class="space-y-6">
+        <!-- Информация о рецепте -->
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-medium text-gray-900">Информация</h2>
+            <button 
+              @click="toggleFavorite"
+              class="text-gray-400 hover:text-red-500 transition-colors"
+            >
+              <Icon :name="isFavorite ? 'heart' : 'heart-outline'" class="w-6 h-6" />
+            </button>
+          </div>
+          
+          <div class="space-y-3">
+            <div class="flex items-center">
+              <Icon name="clock" class="w-5 h-5 text-gray-400 mr-2" />
+              <span class="text-gray-600">{{ recipe.cookingTime }} минут</span>
+            </div>
+            <div class="flex items-center">
+              <Icon name="map-pin" class="w-5 h-5 text-gray-400 mr-2" />
+              <span class="text-gray-600">{{ recipe.country }}</span>
+            </div>
+            <div class="flex items-center">
+              <Icon name="user" class="w-5 h-5 text-gray-400 mr-2" />
+              <span class="text-gray-600">{{ recipe.servings }} порций</span>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <h3 class="text-sm font-medium text-gray-900 mb-2">Теги</h3>
+            <div class="flex flex-wrap gap-1">
+              <span 
+                v-for="tag in recipe.tags" 
+                :key="tag"
+                class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+              >
+                {{ tag }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Кнопки действий -->
+        <div class="space-y-2">
+          <button 
+            @click="shareRecipe"
+            class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm"
+          >
+            <Icon name="share" class="w-4 h-4 mr-2" />
+            Поделиться
+          </button>
+          <button 
+            @click="printRecipe"
+            class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors text-sm"
+          >
+            <Icon name="printer" class="w-4 h-4 mr-2" />
+            Распечатать
+          </button>
+        </div>
+      </div>
+    </div>
+  </PageContainer>
 </template>
 
-<script setup lang="ts">
-import { useRecipesStore } from '~/stores/recipes'
-import { useFavoritesStore } from '~/stores/favorites'
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useNuxtApp } from '#app'
+import { useRoute } from 'vue-router'
+import PageContainer from '~/components/PageContainer.vue'
+import PageTitle from '~/components/PageTitle.vue'
 
-// Указываем, что страница использует макет по умолчанию
-definePageMeta({
-  layout: 'default'
-})
-
+const { $api } = useNuxtApp()
 const route = useRoute()
-const recipesStore = useRecipesStore()
-const favoritesStore = useFavoritesStore()
+const recipe = ref({})
+const isFavorite = ref(false)
 
-const recipe = computed(() => {
-  return recipesStore.getRecipeById(Number(route.params.id))
-})
-
-const isFavorite = computed(() => {
-  return favoritesStore.favorites?.includes(Number(route.params.id)) || false
-})
-
-const toggleFavorite = () => {
-  if (isFavorite.value) {
-    favoritesStore.removeFavorite(Number(route.params.id))
-  } else {
-    favoritesStore.addFavorite(Number(route.params.id))
+onMounted(async () => {
+  try {
+    const response = await $api.get(`/recipes/${route.params.id}`)
+    recipe.value = response.data
+    isFavorite.value = response.data.isFavorite
+  } catch (error) {
+    console.error('Ошибка при загрузке рецепта:', error)
   }
+})
+
+const toggleFavorite = async () => {
+  try {
+    await $api.post(`/recipes/${recipe.value.id}/toggle-favorite`)
+    isFavorite.value = !isFavorite.value
+  } catch (error) {
+    console.error('Ошибка при добавлении в избранное:', error)
+  }
+}
+
+const shareRecipe = () => {
+  if (navigator.share) {
+    navigator.share({
+      title: recipe.value.title,
+      text: recipe.value.description,
+      url: window.location.href
+    })
+  }
+}
+
+const printRecipe = () => {
+  window.print()
 }
 </script> 

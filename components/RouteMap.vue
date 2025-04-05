@@ -3,7 +3,7 @@
     <div ref="mapContainer" class="h-full w-full"></div>
     
     <!-- Панель управления -->
-    <div class="absolute top-4 right-4 bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[1000] w-40 sm:w-64">
+    <div class="hidden md:block absolute top-4 right-4 bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[9999] w-40 sm:w-64">
       <div class="flex items-center justify-between mb-2">
         <h3 class="text-xs sm:text-sm font-medium text-gray-900">Маршрут</h3>
         <button 

@@ -1,65 +1,71 @@
 <template>
-  <div>
-    <section class="mb-8 sm:mb-16 px-4 sm:px-6">
-      <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl font-light text-gray-900 mb-4 sm:mb-6">Добро пожаловать в CulinaryPassport</h1>
-        <p class="text-gray-600 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-          Ваш гид по кулинарным путешествиям по всему миру. Откройте для себя новые вкусы и традиции разных стран.
-        </p>
-      </div>
-    </section>
+  <PageContainer>
+    <template #header>
+      <PageTitle
+        title="Кулинарные путешествия по всему миру"
+        description="Откройте для себя уникальные рецепты, создавайте маршруты гастрономических путешествий и сохраняйте свои любимые блюда"
+      />
+    </template>
 
-    <section class="px-4 sm:px-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
-        <div class="bg-white rounded-lg p-4 sm:p-6 md:p-8 border border-gray-200 hover:border-gray-300 transition-colors">
-          <div class="mb-4 sm:mb-6">
-            <Icon name="book-open" class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
-          </div>
-          <h3 class="text-lg sm:text-xl font-light text-gray-900 mb-2 sm:mb-3">Рецепты</h3>
-          <p class="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">Изучите традиционные рецепты со всего мира</p>
-          <NuxtLink 
-            to="/recipes" 
-            class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors text-xs sm:text-sm"
-          >
-            Перейти к рецептам
-            <Icon name="arrow-right" class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-          </NuxtLink>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Кулинарная карта мира -->
+      <NuxtLink 
+        to="/map"
+        class="group bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+      >
+        <div class="aspect-w-16 aspect-h-9">
+          <img 
+            src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=450&q=80"
+            alt="Кулинарная карта мира"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         </div>
+        <div class="p-4">
+          <h2 class="text-xl font-medium text-gray-900 mb-2">Кулинарная карта мира</h2>
+          <p class="text-gray-600">Исследуйте рецепты разных стран на интерактивной карте</p>
+        </div>
+      </NuxtLink>
 
-        <div class="bg-white rounded-lg p-4 sm:p-6 md:p-8 border border-gray-200 hover:border-gray-300 transition-colors">
-          <div class="mb-4 sm:mb-6">
-            <Icon name="map" class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
-          </div>
-          <h3 class="text-lg sm:text-xl font-light text-gray-900 mb-2 sm:mb-3">Карта</h3>
-          <p class="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">Откройте кулинарные маршруты на интерактивной карте</p>
-          <NuxtLink 
-            to="/map" 
-            class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors text-xs sm:text-sm"
-          >
-            Исследовать карту
-            <Icon name="arrow-right" class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-          </NuxtLink>
+      <!-- Кулинарные путешествия -->
+      <NuxtLink 
+        to="/travel"
+        class="group bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+      >
+        <div class="aspect-w-16 aspect-h-9">
+          <img 
+            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=450&q=80"
+            alt="Кулинарные путешествия"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         </div>
+        <div class="p-4">
+          <h2 class="text-xl font-medium text-gray-900 mb-2">Кулинарные путешествия</h2>
+          <p class="text-gray-600">Создавайте и сохраняйте свои маршруты кулинарных путешествий</p>
+        </div>
+      </NuxtLink>
 
-        <div class="bg-white rounded-lg p-4 sm:p-6 md:p-8 border border-gray-200 hover:border-gray-300 transition-colors">
-          <div class="mb-4 sm:mb-6">
-            <Icon name="globe" class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
-          </div>
-          <h3 class="text-lg sm:text-xl font-light text-gray-900 mb-2 sm:mb-3">Путешествия</h3>
-          <p class="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">Планируйте свои гастрономические приключения</p>
-          <NuxtLink 
-            to="/travel" 
-            class="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors text-xs sm:text-sm"
-          >
-            Начать планирование
-            <Icon name="arrow-right" class="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-          </NuxtLink>
+      <!-- Избранные рецепты -->
+      <NuxtLink 
+        to="/favorites"
+        class="group bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow"
+      >
+        <div class="aspect-w-16 aspect-h-9">
+          <img 
+            src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&h=450&q=80"
+            alt="Избранные рецепты"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         </div>
-      </div>
-    </section>
-  </div>
+        <div class="p-4">
+          <h2 class="text-xl font-medium text-gray-900 mb-2">Избранные рецепты</h2>
+          <p class="text-gray-600">Сохраняйте понравившиеся рецепты для быстрого доступа</p>
+        </div>
+      </NuxtLink>
+    </div>
+  </PageContainer>
 </template>
 
 <script setup>
-// Логика компонента будет добавлена позже
+import PageContainer from '~/components/PageContainer.vue'
+import PageTitle from '~/components/PageTitle.vue'
 </script> 

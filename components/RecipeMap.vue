@@ -3,9 +3,9 @@
     <div ref="mapContainer" class="h-full w-full"></div>
     
     <!-- Панель управления -->
-    <div class="absolute top-4 right-4 flex flex-col gap-4">
+    <div class="hidden md:block absolute top-4 right-4 flex flex-col gap-4 z-[9999]">
       <!-- Поиск -->
-      <div class="bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[1000] w-48 sm:w-64">
+      <div class="bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg w-48 sm:w-64">
         <input
           v-model="searchQuery"
           type="text"
@@ -16,7 +16,7 @@
       </div>
 
       <!-- Фильтры -->
-      <div class="bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[1000] w-48 sm:w-64">
+      <div class="bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg w-48 sm:w-64">
         <div class="flex items-center justify-between mb-2">
           <h3 class="text-xs sm:text-sm font-medium text-gray-900">Фильтры</h3>
           <button 
@@ -168,7 +168,7 @@
     </div>
 
     <!-- Легенда -->
-    <div class="absolute bottom-4 left-4 bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[1000] max-h-[40vh] sm:max-h-[50vh] overflow-y-auto w-40 sm:w-48">
+    <div class="hidden md:block absolute bottom-4 left-4 bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[9999] max-h-[40vh] sm:max-h-[50vh] overflow-y-auto w-40 sm:w-48">
       <h3 class="text-xs sm:text-sm font-medium text-gray-900 mb-2">Рецепты по странам</h3>
       <div class="space-y-1 sm:space-y-2">
         <div v-for="(count, country) in recipesByCountry" :key="country" 
