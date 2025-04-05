@@ -1,4 +1,4 @@
-<template>
+<template> 
   <nav class="bg-white shadow-lg">
     <div class="max-w-7xl mx-auto px-4">
       <div class="flex justify-between h-16">
