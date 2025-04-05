@@ -10,7 +10,7 @@
       >
         <Icon
           :name="star <= rating ? 'star-solid' : 'star'"
-          class="w-5 h-5"
+          class="w-4 h-4 sm:w-5 sm:h-5"
           :class="[
             star <= rating ? 'text-yellow-400' : 'text-gray-300',
             interactive ? 'hover:text-yellow-400' : ''
@@ -18,7 +18,7 @@
         />
       </button>
     </div>
-    <span v-if="showCount" class="ml-2 text-sm text-gray-500">
+    <span v-if="showCount" class="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-500">
       ({{ count }})
     </span>
   </div>

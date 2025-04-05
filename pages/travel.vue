@@ -2,71 +2,60 @@
   <div class="min-h-screen bg-gray-50">
     <!-- Шапка -->
     <div class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h1 class="text-3xl font-bold text-gray-900">Кулинарные путешествия</h1>
-        <p class="mt-2 text-gray-600">Откройте для себя мир через его кухню</p>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Кулинарные путешествия</h1>
+        <p class="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">Откройте для себя мир через его кухню</p>
       </div>
     </div>
 
     <!-- Основной контент -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Карта маршрутов -->
-        <div class="lg:col-span-2">
-          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div class="h-[600px]">
-              <RouteMap v-if="selectedRoute" :route="selectedRoute" />
-              <RecipeMap v-else :recipes="recipes" />
-            </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+      <!-- Фильтры для мобильных и планшетов -->
+      <div class="lg:hidden mb-4 sm:mb-6">
+        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-base sm:text-lg font-medium text-gray-900">Маршруты</h2>
+            <button 
+              @click="showFilters = !showFilters"
+              class="text-gray-400 hover:text-gray-500"
+            >
+              <Icon :name="showFilters ? 'chevron-up' : 'chevron-down'" class="w-5 h-5" />
+            </button>
           </div>
-        </div>
-
-        <!-- Список маршрутов -->
-        <div class="space-y-6">
-          <!-- Фильтры -->
-          <div class="bg-white rounded-lg shadow-sm p-4">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-medium text-gray-900">Маршруты</h2>
-              <button 
-                @click="showAddRouteModal = true"
-                class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors"
-              >
-                Создать маршрут
-              </button>
-            </div>
-
+          
+          <div v-if="showFilters" class="space-y-3">
             <!-- Поиск -->
-            <div class="mb-4">
+            <div>
               <input
                 v-model="searchQuery"
                 type="text"
                 placeholder="Поиск маршрутов..."
-                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
             </div>
-
+            
             <!-- Список маршрутов -->
-            <div class="space-y-4">
+            <div class="space-y-2">
               <div 
                 v-for="route in filteredRoutes" 
                 :key="route.id"
-                class="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                class="bg-gray-50 rounded-lg p-2 sm:p-3 cursor-pointer hover:bg-gray-100 transition-colors"
                 @click="selectRoute(route)"
               >
                 <div class="flex items-start justify-between">
                   <div>
-                    <h3 class="font-medium text-gray-900">{{ route.title }}</h3>
-                    <p class="text-sm text-gray-500 mt-1">{{ route.countries.length }} стран</p>
+                    <h3 class="font-medium text-gray-900 text-sm sm:text-base">{{ route.title }}</h3>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ route.countries.length }} стран</p>
                   </div>
                   <div class="flex items-center space-x-2">
-                    <span class="text-sm text-gray-500">{{ route.duration }} дней</span>
+                    <span class="text-xs sm:text-sm text-gray-500">{{ route.duration }} дней</span>
                     <button 
                       @click.stop="toggleFavorite(route)"
                       class="text-gray-400 hover:text-red-500 transition-colors"
                     >
                       <Icon 
                         :name="isFavorite(route.id) ? 'heart' : 'heart-outline'" 
-                        class="w-5 h-5"
+                        class="w-4 h-4 sm:w-5 sm:h-5"
                       />
                     </button>
                   </div>
@@ -75,7 +64,83 @@
                   <span 
                     v-for="country in route.countries" 
                     :key="country"
-                    class="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
+                    class="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
+                  >
+                    {{ country }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+        <!-- Карта маршрутов -->
+        <div class="lg:col-span-2">
+          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="h-[400px] sm:h-[500px] md:h-[600px]">
+              <RouteMap v-if="selectedRoute" :route="selectedRoute" />
+              <RecipeMap v-else :recipes="recipes" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Список маршрутов для десктопа -->
+        <div class="hidden lg:block space-y-4 sm:space-y-6">
+          <!-- Фильтры -->
+          <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <h2 class="text-base sm:text-lg font-medium text-gray-900">Маршруты</h2>
+              <button 
+                @click="showAddRouteModal = true"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors text-sm sm:text-base"
+              >
+                Создать маршрут
+              </button>
+            </div>
+
+            <!-- Поиск -->
+            <div class="mb-3 sm:mb-4">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Поиск маршрутов..."
+                class="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+              />
+            </div>
+
+            <!-- Список маршрутов -->
+            <div class="space-y-3 sm:space-y-4">
+              <div 
+                v-for="route in filteredRoutes" 
+                :key="route.id"
+                class="bg-gray-50 rounded-lg p-3 sm:p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                @click="selectRoute(route)"
+              >
+                <div class="flex items-start justify-between">
+                  <div>
+                    <h3 class="font-medium text-gray-900 text-sm sm:text-base">{{ route.title }}</h3>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ route.countries.length }} стран</p>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs sm:text-sm text-gray-500">{{ route.duration }} дней</span>
+                    <button 
+                      @click.stop="toggleFavorite(route)"
+                      class="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Icon 
+                        :name="isFavorite(route.id) ? 'heart' : 'heart-outline'" 
+                        class="w-4 h-4 sm:w-5 sm:h-5"
+                      />
+                    </button>
+                  </div>
+                </div>
+                <div class="mt-2 flex flex-wrap gap-1">
+                  <span 
+                    v-for="country in route.countries" 
+                    :key="country"
+                    class="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
                   >
                     {{ country }}
                   </span>
@@ -85,27 +150,27 @@
           </div>
 
           <!-- Избранные маршруты -->
-          <div class="bg-white rounded-lg shadow-sm p-4">
-            <h2 class="text-lg font-medium text-gray-900 mb-4">Избранные маршруты</h2>
-            <div class="space-y-4">
+          <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+            <h2 class="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Избранные маршруты</h2>
+            <div class="space-y-3 sm:space-y-4">
               <div 
                 v-for="route in favoriteRoutes" 
                 :key="route.id"
-                class="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                class="bg-gray-50 rounded-lg p-3 sm:p-4 cursor-pointer hover:bg-gray-100 transition-colors"
                 @click="selectRoute(route)"
               >
                 <div class="flex items-start justify-between">
                   <div>
-                    <h3 class="font-medium text-gray-900">{{ route.title }}</h3>
-                    <p class="text-sm text-gray-500 mt-1">{{ route.countries.length }} стран</p>
+                    <h3 class="font-medium text-gray-900 text-sm sm:text-base">{{ route.title }}</h3>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ route.countries.length }} стран</p>
                   </div>
-                  <span class="text-sm text-gray-500">{{ route.duration }} дней</span>
+                  <span class="text-xs sm:text-sm text-gray-500">{{ route.duration }} дней</span>
                 </div>
                 <div class="mt-2 flex flex-wrap gap-1">
                   <span 
                     v-for="country in route.countries" 
                     :key="country"
-                    class="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
+                    class="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
                   >
                     {{ country }}
                   </span>
@@ -120,41 +185,41 @@
     <!-- Модальное окно создания маршрута -->
     <div v-if="showAddRouteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[2000]">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-medium text-gray-900">Создание маршрута</h2>
+        <div class="p-4 sm:p-6">
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 class="text-lg sm:text-xl font-medium text-gray-900">Создание маршрута</h2>
             <button 
               @click="showAddRouteModal = false"
               class="text-gray-400 hover:text-gray-500"
             >
-              <Icon name="close" class="w-6 h-6" />
+              <Icon name="close" class="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
 
-          <form @submit.prevent="createRoute" class="space-y-4">
+          <form @submit.prevent="createRoute" class="space-y-3 sm:space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Название маршрута</label>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700">Название маршрута</label>
               <input
                 v-model="newRoute.title"
                 type="text"
                 required
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                class="mt-1 block w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Описание</label>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700">Описание</label>
               <textarea
                 v-model="newRoute.description"
                 rows="3"
                 required
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                class="mt-1 block w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
               ></textarea>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Страны</label>
-              <div class="mt-1 flex flex-wrap gap-2">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700">Страны</label>
+              <div class="mt-1 flex flex-wrap gap-1 sm:gap-2">
                 <div 
                   v-for="country in availableCountries" 
                   :key="country"
@@ -165,35 +230,35 @@
                     v-model="newRoute.countries"
                     type="checkbox"
                     :value="country"
-                    class="h-4 w-4 text-gray-600 focus:ring-gray-500 border-gray-300 rounded"
+                    class="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 focus:ring-gray-500 border-gray-300 rounded"
                   />
-                  <label :for="country" class="ml-2 text-sm text-gray-700">{{ country }}</label>
+                  <label :for="country" class="ml-1 sm:ml-2 text-xs sm:text-sm text-gray-700">{{ country }}</label>
                 </div>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Продолжительность (дни)</label>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700">Продолжительность (дни)</label>
               <input
                 v-model="newRoute.duration"
                 type="number"
                 min="1"
                 required
-                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                class="mt-1 block w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
             </div>
 
-            <div class="flex justify-end space-x-3">
+            <div class="flex justify-end space-x-2 sm:space-x-3">
               <button
                 type="button"
                 @click="showAddRouteModal = false"
-                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Отмена
               </button>
               <button
                 type="submit"
-                class="px-4 py-2 bg-gray-800 text-white rounded-md text-sm font-medium hover:bg-gray-700"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-800 text-white rounded-md text-xs sm:text-sm font-medium hover:bg-gray-700"
               >
                 Создать
               </button>
@@ -217,6 +282,7 @@ const searchQuery = ref('')
 const showAddRouteModal = ref(false)
 const selectedRoute = ref(null)
 const favoriteRoutes = ref([])
+const showFilters = ref(false)
 
 // Новый маршрут
 const newRoute = ref({
@@ -279,10 +345,6 @@ const filteredRoutes = computed(() => {
 // Выбор маршрута
 const selectRoute = (route) => {
   selectedRoute.value = route
-  // Обновляем карту с выбранным маршрутом
-  if (map) {
-    map.fitBounds(routePoints.value.map(point => point.coordinates))
-  }
 }
 
 // Избранное

@@ -5,20 +5,20 @@
     <!-- Панель управления -->
     <div class="absolute top-4 right-4 flex flex-col gap-4">
       <!-- Поиск -->
-      <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-lg z-[1000]">
+      <div class="bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[1000] w-48 sm:w-64">
         <input
           v-model="searchQuery"
           type="text"
           placeholder="Поиск рецептов..."
-          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+          class="w-full px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
           @input="handleSearch"
         />
       </div>
 
       <!-- Фильтры -->
-      <div class="bg-white rounded-lg border border-gray-200 p-4 shadow-lg z-[1000] w-64">
+      <div class="bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[1000] w-48 sm:w-64">
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-medium text-gray-900">Фильтры</h3>
+          <h3 class="text-xs sm:text-sm font-medium text-gray-900">Фильтры</h3>
           <button 
             @click="resetFilters"
             class="text-xs text-gray-500 hover:text-gray-700"
@@ -33,18 +33,18 @@
           <div class="border-b border-gray-100 pb-2">
             <button 
               @click="toggleFilter('country')"
-              class="w-full flex items-center justify-between text-sm text-gray-700"
+              class="w-full flex items-center justify-between text-xs sm:text-sm text-gray-700"
             >
               <span>Страна</span>
               <Icon 
                 :name="expandedFilters.country ? 'chevron-up' : 'chevron-down'" 
-                class="w-4 h-4"
+                class="w-3 h-3 sm:w-4 sm:h-4"
               />
             </button>
             <div v-if="expandedFilters.country" class="mt-2">
               <select 
                 v-model="selectedCountry" 
-                class="w-full px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                class="w-full px-2 py-1 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
                 @change="updateMarkers"
               >
                 <option value="">Все страны</option>
@@ -59,19 +59,19 @@
           <div class="border-b border-gray-100 pb-2">
             <button 
               @click="toggleFilter('tags')"
-              class="w-full flex items-center justify-between text-sm text-gray-700"
+              class="w-full flex items-center justify-between text-xs sm:text-sm text-gray-700"
             >
               <span>Теги</span>
               <Icon 
                 :name="expandedFilters.tags ? 'chevron-up' : 'chevron-down'" 
-                class="w-4 h-4"
+                class="w-3 h-3 sm:w-4 sm:h-4"
               />
             </button>
             <div v-if="expandedFilters.tags" class="mt-2">
               <select 
                 v-model="selectedTags" 
                 multiple
-                class="w-full px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 h-24"
+                class="w-full px-2 py-1 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 h-16 sm:h-24"
                 @change="updateMarkers"
               >
                 <option v-for="tag in uniqueTags" :key="tag" :value="tag">
@@ -82,7 +82,7 @@
                 <span 
                   v-for="tag in selectedTags" 
                   :key="tag"
-                  class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full flex items-center"
+                  class="px-1.5 sm:px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full flex items-center"
                 >
                   {{ tag }}
                   <button 
@@ -100,21 +100,21 @@
           <div class="border-b border-gray-100 pb-2">
             <button 
               @click="toggleFilter('time')"
-              class="w-full flex items-center justify-between text-sm text-gray-700"
+              class="w-full flex items-center justify-between text-xs sm:text-sm text-gray-700"
             >
               <span>Время приготовления</span>
               <Icon 
                 :name="expandedFilters.time ? 'chevron-up' : 'chevron-down'" 
-                class="w-4 h-4"
+                class="w-3 h-3 sm:w-4 sm:h-4"
               />
             </button>
             <div v-if="expandedFilters.time" class="mt-2">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1 sm:gap-2">
                 <input
                   v-model="cookingTime.min"
                   type="number"
                   min="0"
-                  class="w-16 px-2 py-1 border border-gray-300 rounded-md text-sm"
+                  class="w-12 sm:w-16 px-1 sm:px-2 py-1 border border-gray-300 rounded-md text-xs sm:text-sm"
                   placeholder="От"
                 >
                 <span class="text-gray-500">-</span>
@@ -122,10 +122,10 @@
                   v-model="cookingTime.max"
                   type="number"
                   min="0"
-                  class="w-16 px-2 py-1 border border-gray-300 rounded-md text-sm"
+                  class="w-12 sm:w-16 px-1 sm:px-2 py-1 border border-gray-300 rounded-md text-xs sm:text-sm"
                   placeholder="До"
                 >
-                <span class="text-gray-500 text-sm">мин</span>
+                <span class="text-gray-500 text-xs sm:text-sm">мин</span>
               </div>
             </div>
           </div>
@@ -134,18 +134,18 @@
           <div>
             <button 
               @click="toggleFilter('style')"
-              class="w-full flex items-center justify-between text-sm text-gray-700"
+              class="w-full flex items-center justify-between text-xs sm:text-sm text-gray-700"
             >
               <span>Стиль карты</span>
               <Icon 
                 :name="expandedFilters.style ? 'chevron-up' : 'chevron-down'" 
-                class="w-4 h-4"
+                class="w-3 h-3 sm:w-4 sm:h-4"
               />
             </button>
             <div v-if="expandedFilters.style" class="mt-2">
               <select 
                 v-model="selectedMapStyle" 
-                class="w-full px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
+                class="w-full px-2 py-1 border border-gray-300 rounded-md text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
                 @change="changeMapStyle"
               >
                 <option value="default">Стандартная карта</option>
@@ -159,7 +159,7 @@
         <!-- Измерение расстояний -->
         <button
           @click="toggleMeasure"
-          class="w-full mt-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
+          class="w-full mt-2 px-2 sm:px-3 py-1 sm:py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-xs sm:text-sm"
           :class="{ 'bg-gray-800 text-white': isMeasuring }"
         >
           {{ isMeasuring ? 'Отменить измерение' : 'Измерить расстояние' }}
@@ -168,13 +168,13 @@
     </div>
 
     <!-- Легенда -->
-    <div class="absolute bottom-4 left-4 bg-white rounded-lg border border-gray-200 p-4 shadow-lg z-[1000] max-h-[50vh] overflow-y-auto">
-      <h3 class="text-sm font-medium text-gray-900 mb-2">Рецепты по странам</h3>
-      <div class="space-y-2">
+    <div class="absolute bottom-4 left-4 bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[1000] max-h-[40vh] sm:max-h-[50vh] overflow-y-auto w-40 sm:w-48">
+      <h3 class="text-xs sm:text-sm font-medium text-gray-900 mb-2">Рецепты по странам</h3>
+      <div class="space-y-1 sm:space-y-2">
         <div v-for="(count, country) in recipesByCountry" :key="country" 
-             class="flex items-center justify-between text-sm">
+             class="flex items-center justify-between text-xs sm:text-sm">
           <div class="flex items-center">
-            <div class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: getCountryColor(country) }"></div>
+            <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full mr-1 sm:mr-2" :style="{ backgroundColor: getCountryColor(country) }"></div>
             <span>{{ country }}</span>
           </div>
           <span class="text-gray-500">{{ count }}</span>
@@ -184,9 +184,9 @@
 
     <!-- Индикатор загрузки -->
     <div v-if="isLoading" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[2000]">
-      <div class="bg-white p-4 rounded-lg shadow-lg">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-        <p class="mt-2 text-sm text-gray-700">Загрузка карты...</p>
+      <div class="bg-white p-3 sm:p-4 rounded-lg shadow-lg">
+        <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-gray-900 mx-auto"></div>
+        <p class="mt-2 text-xs sm:text-sm text-gray-700">Загрузка карты...</p>
       </div>
     </div>
   </div>

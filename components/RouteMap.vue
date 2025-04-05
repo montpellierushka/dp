@@ -3,9 +3,9 @@
     <div ref="mapContainer" class="h-full w-full"></div>
     
     <!-- Панель управления -->
-    <div class="absolute top-4 right-4 bg-white rounded-lg border border-gray-200 p-4 shadow-lg z-[1000]">
+    <div class="absolute top-4 right-4 bg-white rounded-lg border border-gray-200 p-2 sm:p-4 shadow-lg z-[1000] w-40 sm:w-64">
       <div class="flex items-center justify-between mb-2">
-        <h3 class="text-sm font-medium text-gray-900">Маршрут</h3>
+        <h3 class="text-xs sm:text-sm font-medium text-gray-900">Маршрут</h3>
         <button 
           @click="toggleRoute"
           class="text-xs text-gray-500 hover:text-gray-700"
@@ -14,10 +14,10 @@
         </button>
       </div>
       
-      <div v-if="showRoute" class="space-y-2">
+      <div v-if="showRoute" class="space-y-1 sm:space-y-2">
         <div v-for="(point, index) in routePoints" :key="index" class="flex items-center">
-          <div class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: getPointColor(index) }"></div>
-          <span class="text-sm text-gray-700">{{ point.name }}</span>
+          <div class="w-2 h-2 sm:w-3 sm:h-3 rounded-full mr-1 sm:mr-2" :style="{ backgroundColor: getPointColor(index) }"></div>
+          <span class="text-xs sm:text-sm text-gray-700 truncate">{{ point.name }}</span>
         </div>
       </div>
     </div>
@@ -134,7 +134,7 @@ const updateRoute = () => {
   const points = routePoints.value.map(point => point.coordinates)
   routeLine = L.polyline(points, {
     color: '#4B5563',
-    weight: 3,
+    weight: 2,
     opacity: 0.8,
     dashArray: '5, 10'
   }).addTo(map)
@@ -145,16 +145,16 @@ const updateRoute = () => {
       className: 'custom-marker',
       html: `
         <div class="relative group">
-          <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-lg transform transition-all duration-300 group-hover:scale-110"
+          <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden border-2 border-white shadow-lg transform transition-all duration-300 group-hover:scale-110"
                style="background-color: ${getPointColor(index)}">
-            <div class="w-full h-full flex items-center justify-center text-white font-medium">
+            <div class="w-full h-full flex items-center justify-center text-white text-xs sm:text-sm font-medium">
               ${index + 1}
             </div>
           </div>
         </div>
       `,
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
     })
 
     const marker = L.marker(point.coordinates, { 
@@ -163,17 +163,17 @@ const updateRoute = () => {
       autoPan: true
     })
       .bindPopup(`
-        <div class="w-48">
-          <h3 class="font-medium text-gray-900 mb-1">${point.name}</h3>
-          <p class="text-sm text-gray-600">Точка ${index + 1} маршрута</p>
+        <div class="w-32 sm:w-48">
+          <h3 class="font-medium text-gray-900 mb-1 text-xs sm:text-sm">${point.name}</h3>
+          <p class="text-xs sm:text-sm text-gray-600">Точка ${index + 1} маршрута</p>
         </div>
       `, {
         className: 'custom-popup',
         maxWidth: 300,
-        minWidth: 200,
-        autoPanPadding: [50, 50],
+        minWidth: 150,
+        autoPanPadding: [30, 30],
         closeButton: true,
-        offset: [0, -20]
+        offset: [0, -15]
       })
       .addTo(map)
 
@@ -182,7 +182,9 @@ const updateRoute = () => {
 
   // Устанавливаем границы для отображения всего маршрута
   if (points.length > 0) {
-    map.fitBounds(points)
+    map.fitBounds(points, {
+      padding: [30, 30]
+    })
   }
 }
 
