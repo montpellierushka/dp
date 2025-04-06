@@ -11,7 +11,6 @@ export default defineNuxtPlugin(() => {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         },
-        withCredentials: true,
         timeout: 10000
     });
 
@@ -49,7 +48,8 @@ export default defineNuxtPlugin(() => {
                 console.error('API Error Response:', {
                     status: error.response.status,
                     data: error.response.data,
-                    headers: error.response.headers
+                    headers: error.response.headers,
+                    config: error.config
                 });
             } else if (error.request) {
                 // Запрос был сделан, но ответ не получен
