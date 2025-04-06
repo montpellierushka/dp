@@ -9,8 +9,7 @@ export default defineNuxtPlugin(() => {
         baseURL: API_URL,
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Telegram-Init-Data': typeof window !== 'undefined' && window.Telegram?.WebApp?.initData || ''
+            'Accept': 'application/json'
         },
         withCredentials: true,
         timeout: 10000
@@ -24,7 +23,11 @@ export default defineNuxtPlugin(() => {
             headers: config.headers,
             data: config.data
         });
-        if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
+        
+        // Добавляем initData только если он есть и запрос не публичный
+        if (typeof window !== 'undefined' && 
+            window.Telegram?.WebApp?.initData && 
+            !config.url?.startsWith('/public')) {
             config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData
         }
         return config
