@@ -14,51 +14,28 @@ export default defineNuxtPlugin(() => {
         timeout: 10000
     });
 
-    // Интерцептор для добавления данных Telegram Web App
+    // Интерцептор для добавления initData
     api.interceptors.request.use((config) => {
-        console.log('API Request:', {
-            url: config.url,
-            method: config.method,
-            headers: config.headers,
-            data: config.data
-        });
-        
-        // Добавляем initData только если он есть
         if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
-            config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData
+            config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData;
         }
-        return config
+        return config;
     });
 
     // Интерцептор для обработки ошибок
     api.interceptors.response.use(
-        (response: AxiosResponse) => {
-            console.log('API Response:', {
-                status: response.status,
-                data: response.data,
-                headers: response.headers
-            });
-            return response;
-        },
-        (error: AxiosError) => {
+        (response) => response,
+        (error) => {
             if (error.response) {
-                // Сервер вернул ответ с кодом ошибки
-                console.error('API Error Response:', {
+                console.error('Ошибка API:', {
                     status: error.response.status,
                     data: error.response.data,
-                    headers: error.response.headers,
-                    config: error.config
+                    headers: error.response.headers
                 });
             } else if (error.request) {
-                // Запрос был сделан, но ответ не получен
-                console.error('API Error Request:', {
-                    request: error.request,
-                    message: error.message,
-                    config: error.config
-                });
+                console.error('Ошибка сети:', error.request);
             } else {
-                // Произошла ошибка при настройке запроса
-                console.error('API Error:', error.message);
+                console.error('Ошибка:', error.message);
             }
             return Promise.reject(error);
         }
