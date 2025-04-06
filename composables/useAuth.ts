@@ -1,11 +1,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
-interface User {
+export interface User {
     id: number
     name: string
     email: string
     telegram_id: string
+    photo_url: string
 }
 
 export const useAuth = () => {

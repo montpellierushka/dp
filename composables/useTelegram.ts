@@ -9,6 +9,18 @@ interface TelegramUser {
     favorites?: number[];
 }
 
+interface TelegramWebApp {
+    initData: string;
+    ready: () => void;
+    expand: () => void;
+    close: () => void;
+}
+
+interface TelegramWebAppError extends Error {
+    code?: string;
+    message: string;
+}
+
 export const useTelegram = () => {
     const { $webAppApi } = useNuxtApp();
     const user = ref<TelegramUser | null>(null);
@@ -34,9 +46,10 @@ export const useTelegram = () => {
             } else {
                 throw new Error('Неверные данные инициализации');
             }
-        } catch (err: any) {
-            error.value = err.message;
-            console.error('Ошибка при валидации данных:', err);
+        } catch (err: unknown) {
+            const telegramError = err as TelegramWebAppError;
+            error.value = telegramError.message;
+            console.error('Ошибка при валидации данных:', telegramError);
         } finally {
             isLoading.value = false;
         }

@@ -6,7 +6,7 @@
         <div v-else-if="error" class="py-8">
             <ErrorMessage :message="error" />
         </div>
-        <div v-else class="space-y-8">
+        <div v-else-if="recipe" class="space-y-8">
             <div class="card bg-base-100 shadow-xl">
                 <figure class="px-4 pt-4">
                     <img :src="recipe.image || '/images/placeholder.jpg'" :alt="recipe.title" class="rounded-xl h-96 w-full object-cover" />
@@ -83,16 +83,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+import type { Recipe } from '~/composables/useRecipes'
 
-const props = defineProps({
-    recipeId: {
-        type: [String, Number],
-        required: true
-    }
-})
+const props = defineProps<{
+    recipeId: string | number
+}>()
 
 const { user } = useAuth()
-const recipe = ref(null)
+const recipe = ref<Recipe | null>(null)
 const loading = ref(false)
 const error = ref('')
 const isFavorite = ref(false)
@@ -102,10 +100,10 @@ const loadRecipe = async () => {
     loading.value = true
     error.value = ''
     try {
-        const response = await $fetch(`/api/recipes/${props.recipeId}`)
-        recipe.value = response
-        isFavorite.value = response.is_favorite
-        isOwner.value = response.user_id === user.value?.id
+        const response = await $fetch<{ data: Recipe }>(`/api/recipes/${props.recipeId}`)
+        recipe.value = response.data
+        isFavorite.value = response.data.is_favorite
+        isOwner.value = response.data.user_id === user.value?.id
     } catch (e) {
         error.value = 'Ошибка при загрузке рецепта'
         console.error('Error loading recipe:', e)
@@ -115,8 +113,9 @@ const loadRecipe = async () => {
 }
 
 const toggleFavorite = async () => {
+    if (!recipe.value) return
     try {
-        const response = await $fetch(`/api/recipes/${props.recipeId}/favorite`, {
+        const response = await $fetch<{ data: Recipe }>(`/api/recipes/${props.recipeId}/favorite`, {
             method: isFavorite.value ? 'DELETE' : 'POST'
         })
         isFavorite.value = !isFavorite.value
@@ -127,6 +126,7 @@ const toggleFavorite = async () => {
 }
 
 const deleteRecipe = async () => {
+    if (!recipe.value) return
     if (!confirm('Вы уверены, что хотите удалить этот рецепт?')) return
     
     try {

@@ -1,7 +1,7 @@
 <template>
   <div class="layout">
     <Navbar />
-    <main class="main">
+    <main class="main bg-gray-50">
       <slot />
     </main>
     <Notifications />
@@ -22,6 +22,6 @@ import Notifications from '~/components/Notifications.vue'
 
 .main {
   flex: 1;
-  padding: 2rem;
+  
 }
 </style> 

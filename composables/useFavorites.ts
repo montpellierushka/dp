@@ -38,7 +38,7 @@ export const useFavorites = () => {
 
     const toggleFavorite = async (recipeId: number) => {
         try {
-            const recipe = favorites.value.find((r: Recipe) => r.id === recipeId)
+            const recipe = favorites.value.find(r => r.id === recipeId)
             if (recipe?.is_favorite) {
                 return await removeFromFavorites(recipeId)
             } else {

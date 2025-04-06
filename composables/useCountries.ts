@@ -1,9 +1,15 @@
 import { ref } from 'vue'
 import { useApi } from './useApi'
 
-interface Country {
+export interface Country {
     id: number
     name: string
+}
+
+interface CountryValidation {
+    minLength: number
+    maxLength: number
+    pattern: RegExp
 }
 
 export const useCountries = () => {

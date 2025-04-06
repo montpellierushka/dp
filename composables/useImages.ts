@@ -5,6 +5,11 @@ interface ImageUploadResponse {
     url: string
 }
 
+interface ImageConfig {
+    maxSize: number
+    allowedTypes: string[]
+}
+
 export const useImages = () => {
     const api = useApi()
     const loading = ref(false)

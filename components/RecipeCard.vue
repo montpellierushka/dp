@@ -52,13 +52,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
+import type { Recipe } from '~/composables/useRecipes'
 
-const props = defineProps({
-  recipe: {
-    type: Object,
-    required: true
-  }
-})
+const props = defineProps<{
+  recipe: Recipe
+}>()
 
 const { user } = useAuth()
 const isFavorite = ref(false)

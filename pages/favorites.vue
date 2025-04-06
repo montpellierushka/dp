@@ -1,81 +1,89 @@
 <template>
-  <div>
-    <PageHeader>
-      <template #title>Избранные рецепты</template>
-    </PageHeader>
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Избранные рецепты</h1>
 
-    <PageContainer>
-      <div v-if="loading" class="text-center py-8">
-        <div class="loading loading-spinner loading-lg"></div>
-      </div>
+    <div v-if="loading" class="flex justify-center">
+      <div class="loading loading-spinner loading-lg"></div>
+    </div>
 
-      <div v-else-if="error" class="alert alert-error">
-        {{ error }}
-      </div>
+    <div v-else-if="error" class="alert alert-error">
+      <span>{{ error }}</span>
+    </div>
 
-      <div v-else-if="recipes.length === 0" class="text-center py-8">
-        <p class="text-lg">У вас пока нет избранных рецептов</p>
-        <NuxtLink to="/recipes" class="btn btn-primary mt-4">
-          Найти рецепты
-        </NuxtLink>
-      </div>
+    <div v-else-if="recipes.length === 0">
+      <EmptyState
+        title="Нет избранных рецептов"
+        description="Добавьте рецепты в избранное, чтобы они появились здесь"
+      />
+    </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <RecipeCard
-          v-for="recipe in recipes"
-          :key="recipe.id"
-          :recipe="recipe"
-          @favorite="toggleFavorite"
-        />
-      </div>
-    </PageContainer>
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <RecipeCard
+        v-for="recipe in recipes"
+        :key="recipe.id"
+        :recipe="recipe"
+        @favorite="toggleFavorite"
+        @delete="deleteRecipe"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useApi } from '~/composables/useApi'
+import { useFavorites } from '~/composables/useFavorites'
+import { useNotifications } from '~/composables/useNotifications'
+import type { Recipe } from '~/composables/useRecipes'
 
-const api = useApi()
-
+const { favorites, loadFavorites, toggleFavorite } = useFavorites()
+const { showSuccess, showError } = useNotifications()
+const recipes = ref<Recipe[]>([])
 const loading = ref(false)
 const error = ref('')
-const recipes = ref([])
 
-const loadFavorites = async () => {
+const loadRecipes = async () => {
+  loading.value = true
+  error.value = ''
   try {
-    loading.value = true
-    error.value = ''
-
-    const response = await api.get('/favorites/recipes')
-    recipes.value = response.data
+    await loadFavorites()
+    recipes.value = favorites.value
   } catch (e) {
-    error.value = e.response?.data?.message || 'Произошла ошибка при загрузке избранных рецептов'
-    console.error('Error loading favorites:', e)
+    const err = e as Error
+    error.value = 'Ошибка при загрузке избранных рецептов'
+    showError(error.value)
+    console.error('Error loading favorites:', err)
   } finally {
     loading.value = false
   }
 }
 
-const toggleFavorite = async (recipeId: number) => {
+const deleteRecipe = async (id: number) => {
   try {
-    const recipe = recipes.value.find(r => r.id === recipeId)
-    if (!recipe) return
-
-    if (recipe.favorites_count > 0) {
-      await api.delete(`/favorites/recipes/${recipeId}`)
-      recipe.favorites_count--
-      recipes.value = recipes.value.filter(r => r.id !== recipeId)
-    } else {
-      await api.post(`/favorites/recipes/${recipeId}`)
-      recipe.favorites_count++
+    const recipe = recipes.value.find(r => r.id === id)
+    if (recipe) {
+      recipes.value = recipes.value.filter(r => r.id !== id)
+      showSuccess('Рецепт удален из избранного')
     }
   } catch (e) {
+    const err = e as Error
+    error.value = 'Ошибка при удалении рецепта'
+    showError(error.value)
+    console.error('Error deleting recipe:', err)
+  }
+}
+
+const handleToggleFavorite = async (recipe: Recipe) => {
+  try {
+    await toggleFavorite(recipe.id)
+    showSuccess('Рецепт успешно удален из избранного')
+    await loadFavorites()
+  } catch (e) {
+    showError('Произошла ошибка при удалении рецепта из избранного')
     console.error('Error toggling favorite:', e)
   }
 }
 
 onMounted(() => {
-  loadFavorites()
+  loadRecipes()
 })
 </script> 

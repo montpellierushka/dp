@@ -1,9 +1,15 @@
 import { ref } from 'vue'
 import { useApi } from './useApi'
 
-interface Tag {
+export interface Tag {
     id: number
     name: string
+}
+
+interface TagValidation {
+    minLength: number
+    maxLength: number
+    pattern: RegExp
 }
 
 export const useTags = () => {

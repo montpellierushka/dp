@@ -8,12 +8,12 @@
             <span class="label-text">Страна</span>
           </label>
           <select
-            class="select select-bordered w-full"
             v-model="filters.country_id"
+            class="select select-bordered w-full"
           >
             <option value="">Все страны</option>
             <option
-              v-for="country in countries"
+              v-for="country in countriesList"
               :key="country.id"
               :value="country.id"
             >
@@ -21,66 +21,83 @@
             </option>
           </select>
         </div>
+
         <div class="form-control">
           <label class="label">
-            <span class="label-text">Время приготовления</span>
+            <span class="label-text">Время приготовления (до)</span>
           </label>
-          <select
-            class="select select-bordered w-full"
-            v-model="filters.cooking_time"
-          >
-            <option value="">Любое время</option>
-            <option value="15">До 15 минут</option>
-            <option value="30">До 30 минут</option>
-            <option value="45">До 45 минут</option>
-            <option value="60">До 1 часа</option>
-            <option value="120">До 2 часов</option>
-          </select>
+          <input
+            v-model.number="filters.cooking_time"
+            type="number"
+            class="input input-bordered w-full"
+            min="1"
+          />
         </div>
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Сортировка</span>
-          </label>
-          <select
-            class="select select-bordered w-full"
-            v-model="filters.sort"
-          >
-            <option value="created_at">По дате</option>
-            <option value="favorites_count">По популярности</option>
-            <option value="cooking_time">По времени</option>
-          </select>
-        </div>
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Направление</span>
-          </label>
-          <select
-            class="select select-bordered w-full"
-            v-model="filters.direction"
-          >
-            <option value="desc">По убыванию</option>
-            <option value="asc">По возрастанию</option>
-          </select>
-        </div>
+
         <div class="form-control">
           <label class="label">
             <span class="label-text">Теги</span>
           </label>
           <div class="flex flex-wrap gap-2">
-            <label
-              class="label cursor-pointer gap-2"
-              v-for="tag in tags"
+            <div
+              v-for="tag in tagsList"
               :key="tag.id"
+              class="form-control"
             >
-              <input
-                type="checkbox"
-                class="checkbox checkbox-primary"
-                :value="tag.id"
-                v-model="filters.tags"
-              />
-              <span class="label-text">{{ tag.name }}</span>
-            </label>
+              <label class="label cursor-pointer gap-2">
+                <input
+                  type="checkbox"
+                  :value="tag.id"
+                  v-model="filters.tags"
+                  class="checkbox"
+                />
+                <span class="label-text">{{ tag.name }}</span>
+              </label>
+            </div>
           </div>
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Сортировка</span>
+          </label>
+          <select
+            v-model="filters.sort"
+            class="select select-bordered w-full"
+          >
+            <option value="">По умолчанию</option>
+            <option value="title">По названию</option>
+            <option value="cooking_time">По времени приготовления</option>
+            <option value="favorites_count">По количеству избранного</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Направление сортировки</span>
+          </label>
+          <select
+            v-model="filters.direction"
+            class="select select-bordered w-full"
+          >
+            <option value="asc">По возрастанию</option>
+            <option value="desc">По убыванию</option>
+          </select>
+        </div>
+
+        <div class="card-actions justify-end">
+          <button
+            class="btn btn-primary"
+            @click="applyFilters"
+          >
+            Применить
+          </button>
+          <button
+            class="btn btn-ghost"
+            @click="resetFilters"
+          >
+            Сбросить
+          </button>
         </div>
       </div>
     </div>
@@ -88,34 +105,45 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useCountries } from '~/composables/useCountries'
+import { useTags } from '~/composables/useTags'
+import type { RecipeFilters } from '~/composables/useRecipes'
 
-const countries = ref([])
-const tags = ref([])
-const filters = ref({
-  country_id: '',
-  cooking_time: '',
-  sort: 'created_at',
-  direction: 'desc',
-  tags: []
+const { countries: countriesList, loadCountries } = useCountries()
+const { tags: tagsList, loadTags } = useTags()
+
+const filters = ref<RecipeFilters>({
+  country_id: undefined,
+  cooking_time: undefined,
+  sort: undefined,
+  direction: undefined,
+  tags: undefined
 })
 
-const emit = defineEmits(['update:filters'])
+const emit = defineEmits<{
+  (e: 'update', filters: RecipeFilters): void
+}>()
+
+const applyFilters = () => {
+  emit('update', filters.value)
+}
+
+const resetFilters = () => {
+  filters.value = {
+    country_id: undefined,
+    cooking_time: undefined,
+    sort: undefined,
+    direction: undefined,
+    tags: undefined
+  }
+  emit('update', filters.value)
+}
 
 onMounted(async () => {
-  try {
-    const [countriesResponse, tagsResponse] = await Promise.all([
-      $fetch('/api/countries'),
-      $fetch('/api/tags')
-    ])
-    countries.value = countriesResponse
-    tags.value = tagsResponse
-  } catch (error) {
-    console.error('Error loading filters:', error)
-  }
+  await Promise.all([
+    loadCountries(),
+    loadTags()
+  ])
 })
-
-watch(filters, (newFilters) => {
-  emit('update:filters', newFilters)
-}, { deep: true })
 </script> 

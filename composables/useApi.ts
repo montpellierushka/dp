@@ -5,11 +5,15 @@ interface ApiResponse<T> {
     message?: string;
 }
 
+interface ApiParams {
+    [key: string]: string | number | boolean | undefined;
+}
+
 export const useApi = () => {
     const loading = ref(false);
     const error = ref('');
 
-    const get = async <T>(url: string, params?: Record<string, any>): Promise<T> => {
+    const get = async <T>(url: string, params?: ApiParams): Promise<T> => {
         loading.value = true;
         error.value = '';
         try {
@@ -26,7 +30,7 @@ export const useApi = () => {
         }
     };
 
-    const post = async <T>(url: string, data?: any): Promise<T> => {
+    const post = async <T>(url: string, data?: Record<string, any>): Promise<T> => {
         loading.value = true;
         error.value = '';
         try {
@@ -44,7 +48,7 @@ export const useApi = () => {
         }
     };
 
-    const put = async <T>(url: string, data?: any): Promise<T> => {
+    const put = async <T>(url: string, data?: Record<string, any>): Promise<T> => {
         loading.value = true;
         error.value = '';
         try {

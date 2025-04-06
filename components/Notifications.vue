@@ -1,14 +1,20 @@
 <template>
-    <div class="notifications">
+    <div class="fixed top-4 right-4 z-50 space-y-4">
         <div
             v-for="notification in notifications"
             :key="notification.id"
-            class="notification"
-            :class="notification.type"
+            class="card bg-base-100 shadow-xl w-96 cursor-pointer"
+            :class="{
+                'bg-success text-success-content': notification.type === 'success',
+                'bg-error text-error-content': notification.type === 'error',
+                'bg-info text-info-content': notification.type === 'info',
+                'bg-warning text-warning-content': notification.type === 'warning'
+            }"
             @click="removeNotification(notification.id)"
         >
-            <div class="notification-content">
-                <span class="notification-message">{{ notification.message }}</span>
+            <div class="card-body">
+                <h3 class="card-title">{{ notification.title }}</h3>
+                <p>{{ notification.message }}</p>
             </div>
         </div>
     </div>

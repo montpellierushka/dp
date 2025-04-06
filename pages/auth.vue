@@ -1,29 +1,25 @@
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-base-200">
-        <div class="card bg-base-100 shadow-xl w-full max-w-md">
-            <div class="card-body">
-                <h2 class="card-title text-center">Авторизация</h2>
-                <p class="text-center mb-4">
-                    Для использования приложения необходимо авторизоваться через Telegram
-                </p>
-
-                <div v-if="loading" class="text-center py-8">
-                    <div class="loading loading-spinner loading-lg"></div>
+    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Вход через Telegram
+                </h2>
+            </div>
+            <div class="mt-8 space-y-6">
+                <div v-if="error" class="alert alert-error">
+                    <span>{{ error }}</span>
                 </div>
-
-                <div v-else-if="error" class="alert alert-error">
-                    {{ error }}
-                </div>
-
-                <div v-else class="flex flex-col items-center gap-4">
-                    <button
-                        class="btn btn-primary w-full"
-                        @click="login"
-                    >
-                        <Icon name="mdi:telegram" size="24" />
-                        Войти через Telegram
-                    </button>
-                </div>
+                <button
+                    @click="login"
+                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    :disabled="loading"
+                >
+                    <span v-if="loading" class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <div class="loading loading-spinner loading-sm"></div>
+                    </span>
+                    Войти через Telegram
+                </button>
             </div>
         </div>
     </div>
@@ -32,26 +28,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAuth } from '~/composables/useAuth'
-import { useRouter } from 'vue-router'
 
-const { login: authLogin } = useAuth()
-const router = useRouter()
-
-const loading = ref(false)
-const error = ref('')
+const { login: authLogin, loading, error } = useAuth()
 
 const login = async () => {
     try {
-        loading.value = true
-        error.value = ''
-
         await authLogin()
-        router.push('/')
     } catch (e) {
-        error.value = e.response?.data?.message || 'Произошла ошибка при авторизации'
-        console.error('Error logging in:', e)
-    } finally {
-        loading.value = false
+        const err = e as Error
+        console.error('Error logging in:', err)
     }
 }
 </script> 

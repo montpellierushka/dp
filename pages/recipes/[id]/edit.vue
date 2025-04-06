@@ -1,62 +1,82 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div>
     <Navbar />
-    <main class="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div class="px-4 py-6 sm:px-0">
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <h1 class="text-3xl font-bold text-gray-900 mb-6">Редактировать рецепт</h1>
-          
-          <form @submit.prevent="submitForm" class="space-y-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Изображение</label>
-              <div class="flex items-center gap-4">
-                <img
-                  v-if="form.image"
-                  :src="form.image"
-                  class="w-32 h-32 object-cover rounded-lg"
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  class="file-input file-input-bordered w-full"
-                  @change="handleImageUpload"
-                />
-              </div>
-            </div>
+    <PageHeader
+      title="Редактирование рецепта"
+      description="Внесите необходимые изменения в рецепт"
+    >
+      <template #actions>
+        <button
+          class="btn btn-ghost"
+          @click="router.push(`/recipes/${route.params.id}`)"
+        >
+          Отмена
+        </button>
+        <button
+          class="btn btn-primary"
+          @click="submitForm"
+          :disabled="submitting"
+        >
+          <span v-if="submitting" class="loading loading-spinner"></span>
+          {{ submitting ? 'Сохранение...' : 'Сохранить' }}
+        </button>
+      </template>
+    </PageHeader>
 
-            <div>
-              <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Название</label>
+    <div class="container mx-auto px-4 py-8">
+      <div v-if="loading" class="flex justify-center py-8">
+        <div class="loading loading-spinner loading-lg"></div>
+      </div>
+
+      <div v-else-if="error" class="alert alert-error">
+        <span>{{ error }}</span>
+      </div>
+
+      <div v-else-if="!recipe">
+        <EmptyState
+          title="Рецепт не найден"
+          description="Попробуйте найти другой рецепт"
+        />
+      </div>
+
+      <div v-else class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+          <form @submit.prevent="submitForm" class="space-y-6">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Название</span>
+              </label>
               <input
-                id="title"
                 v-model="form.title"
                 type="text"
+                class="input input-bordered w-full"
                 required
-                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              >
+              />
             </div>
 
-            <div>
-              <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Описание</label>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Описание</span>
+              </label>
               <textarea
-                id="description"
                 v-model="form.description"
-                rows="3"
+                class="textarea textarea-bordered h-24"
                 required
-                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               ></textarea>
             </div>
 
-            <div>
-              <label for="country" class="block text-sm font-medium text-gray-700 mb-2">Страна</label>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Страна</span>
+              </label>
               <select
-                id="country"
                 v-model="form.country_id"
-                class="select select-bordered"
+                class="select select-bordered w-full"
                 required
               >
                 <option value="">Выберите страну</option>
                 <option
-                  v-for="country in countries"
+                  v-for="country in countriesList"
                   :key="country.id"
                   :value="country.id"
                 >
@@ -65,305 +85,354 @@
               </select>
             </div>
 
-            <div>
-              <label for="cookingTime" class="block text-sm font-medium text-gray-700 mb-2">Время приготовления (минуты)</label>
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Время приготовления (минуты)</span>
+              </label>
               <input
-                id="cookingTime"
                 v-model.number="form.cooking_time"
                 type="number"
-                min="1"
+                class="input input-bordered w-full"
                 required
-                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              >
+                min="1"
+              />
             </div>
 
-            <div>
-              <label for="ingredients" class="block text-sm font-medium text-gray-700 mb-2">Ингредиенты</label>
-              <div class="space-y-2">
-                <div 
-                  v-for="(ingredient, index) in form.ingredients" 
-                  :key="index"
-                  class="flex items-center space-x-2"
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Теги</span>
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <div
+                  v-for="tag in tagsList"
+                  :key="tag.id"
+                  class="form-control"
                 >
-                  <input
-                    v-model="ingredient.name"
-                    type="text"
-                    required
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                  <input
-                    v-model="ingredient.amount"
-                    type="text"
-                    required
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                  <input
-                    v-model="ingredient.unit"
-                    type="text"
-                    required
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  >
-                  <button
-                    type="button"
-                    @click="removeIngredient(index)"
-                    class="p-2 text-red-500 hover:text-red-600"
-                  >
-                    <Icon name="trash" class="w-5 h-5" />
-                  </button>
+                  <label class="label cursor-pointer gap-2">
+                    <input
+                      type="checkbox"
+                      :value="tag.id"
+                      v-model="form.tags"
+                      class="checkbox"
+                    />
+                    <span class="label-text">{{ tag.name }}</span>
+                  </label>
                 </div>
+              </div>
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Изображение</span>
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                @change="handleImageChange"
+                class="file-input file-input-bordered w-full"
+              />
+              <div v-if="form.image" class="mt-4">
+                <img
+                  :src="getImageUrl(form.image)"
+                  alt="Preview"
+                  class="max-w-xs rounded-lg"
+                />
+              </div>
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Ингредиенты</span>
+              </label>
+              <div
+                v-for="(ingredient, index) in form.ingredients"
+                :key="index"
+                class="flex gap-4 mb-4"
+              >
+                <input
+                  v-model="ingredient.name"
+                  type="text"
+                  placeholder="Название"
+                  class="input input-bordered flex-1"
+                  required
+                />
+                <input
+                  v-model="ingredient.amount"
+                  type="text"
+                  placeholder="Количество"
+                  class="input input-bordered w-32"
+                  required
+                />
+                <input
+                  v-model="ingredient.unit"
+                  type="text"
+                  placeholder="Единица измерения"
+                  class="input input-bordered w-32"
+                  required
+                />
                 <button
                   type="button"
-                  @click="addIngredient"
-                  class="text-blue-500 hover:text-blue-600 text-sm font-medium"
+                  class="btn btn-error"
+                  @click="removeIngredient(index)"
                 >
-                  + Добавить ингредиент
+                  Удалить
                 </button>
               </div>
-            </div>
-
-            <div>
-              <label for="steps" class="block text-sm font-medium text-gray-700 mb-2">Шаги приготовления</label>
-              <div class="space-y-2">
-                <div 
-                  v-for="(step, index) in form.steps" 
-                  :key="index"
-                  class="flex items-start space-x-2"
-                >
-                  <span class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mt-2">
-                    {{ index + 1 }}
-                  </span>
-                  <textarea
-                    :value="step.description"
-                    @input="(e: Event) => {
-                      const target = e.target as HTMLTextAreaElement;
-                      form.steps[index].description = target.value;
-                    }"
-                    rows="2"
-                    required
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                  ></textarea>
-                  <button
-                    type="button"
-                    @click="removeStep(index)"
-                    class="p-2 text-red-500 hover:text-red-600 mt-2"
-                  >
-                    <Icon name="trash" class="w-5 h-5" />
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  @click="addStep"
-                  class="text-blue-500 hover:text-blue-600 text-sm font-medium"
-                >
-                  + Добавить шаг
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">Теги</label>
-              <div class="space-y-2">
-                <div 
-                  v-for="(tag, index) in tags" 
-                  :key="index"
-                  class="flex items-center space-x-2"
-                >
-                  <input
-                    type="checkbox"
-                    :value="tag.id"
-                    v-model="form.tags"
-                    class="checkbox checkbox-primary"
-                  >
-                  <span class="label-text">{{ tag.name }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex justify-end space-x-4">
-              <NuxtLink
-                :to="`/recipes/${route.params.id}`"
-                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Отмена
-              </NuxtLink>
               <button
-                type="submit"
-                class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                type="button"
+                class="btn btn-primary"
+                @click="addIngredient"
               >
-                Сохранить изменения
+                Добавить ингредиент
+              </button>
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Шаги приготовления</span>
+              </label>
+              <div
+                v-for="(step, index) in form.steps"
+                :key="index"
+                class="space-y-4 mb-6"
+              >
+                <textarea
+                  v-model="step.description"
+                  class="textarea textarea-bordered w-full"
+                  placeholder="Описание шага"
+                  required
+                ></textarea>
+                <input
+                  type="file"
+                  accept="image/*"
+                  @change="(e) => handleStepImageChange(e, index)"
+                  class="file-input file-input-bordered w-full"
+                />
+                <div v-if="step.image" class="mt-4">
+                  <img
+                    :src="getImageUrl(step.image)"
+                    :alt="`Шаг ${index + 1}`"
+                    class="max-w-xs rounded-lg"
+                  />
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-error"
+                  @click="removeStep(index)"
+                >
+                  Удалить шаг
+                </button>
+              </div>
+              <button
+                type="button"
+                class="btn btn-primary"
+                @click="addStep"
+              >
+                Добавить шаг
               </button>
             </div>
           </form>
         </div>
       </div>
-    </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRecipesStore } from '~/stores/recipes'
-import { useRouter, useRoute } from 'vue-router'
-import { $api } from '~/services/api'
-import type { Recipe } from '~/types/recipe'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useRecipes } from '~/composables/useRecipes'
+import { useNotifications } from '~/composables/useNotifications'
+import { useCountries } from '~/composables/useCountries'
+import { useTags } from '~/composables/useTags'
+import type { Recipe } from '~/composables/useRecipes'
+import EmptyState from '~/components/EmptyState.vue'
+import PageHeader from '~/components/PageHeader.vue'
+import Navbar from '~/components/Navbar.vue'
+
+interface Step {
+    description: string
+    image?: string | File | undefined
+}
 
 interface Ingredient {
-  name: string
-  amount: string
-  unit: string
+    name: string
+    amount: string
+    unit: string
 }
 
-interface RecipeForm {
-  title: string
-  description: string
-  country_id: string
-  cooking_time: number
-  servings: number
-  ingredients: Ingredient[]
-  steps: { description: string; image: File | null }[]
-  tags: string[]
-  image: File | null
+interface FormData {
+    title: string
+    description: string
+    country_id: number | null
+    cooking_time: number | null
+    tags: number[]
+    ingredients: Ingredient[]
+    steps: Step[]
+    image?: File | string
 }
 
-const recipesStore = useRecipesStore()
-const router = useRouter()
 const route = useRoute()
+const router = useRouter()
+const { loadRecipe, updateRecipe } = useRecipes()
+const { showSuccess, showError } = useNotifications()
+const { countries: countriesList, loadCountries } = useCountries()
+const { tags: tagsList, loadTags } = useTags()
 
-// Загрузка данных рецепта
 const recipe = ref<Recipe | null>(null)
+const loading = ref(false)
+const error = ref<string | null>(null)
+const submitting = ref(false)
+const imageUrls = ref<string[]>([])
 
-// Состояние формы
-const form = ref<RecipeForm>({
-  title: '',
-  description: '',
-  country_id: '',
-  cooking_time: 30,
-  servings: 1,
-  ingredients: [],
-  steps: [],
-  tags: [],
-  image: null
+const form = ref<FormData>({
+    title: '',
+    description: '',
+    country_id: null,
+    cooking_time: null,
+    tags: [],
+    ingredients: [],
+    steps: [],
+    image: undefined
 })
 
-// Инициализация формы данными рецепта
-onMounted(async () => {
-  try {
-    const response = await $api.get<{ data: Recipe }>(`/recipes/${route.params.id}`)
-    recipe.value = response.data.data
-    
-    // Преобразуем данные рецепта в формат формы
-    form.value = {
-      title: response.data.data.title,
-      description: response.data.data.description,
-      country_id: response.data.data.country_id,
-      cooking_time: response.data.data.cooking_time,
-      servings: response.data.data.servings,
-      ingredients: response.data.data.ingredients.map(ing => ({
-        name: ing.name,
-        amount: ing.amount,
-        unit: ing.unit
-      })),
-      steps: response.data.data.steps.map(step => ({
-        description: step.description,
-        image: step.image ? new File([step.image], step.image.name) : null
-      })),
-      tags: response.data.data.tags.map(tag => tag.id),
-      image: response.data.data.image ? new File([response.data.data.image], response.data.data.image.name) : null
+const getImageUrl = (image: File | string): string => {
+    if (image instanceof File) {
+        const url = URL.createObjectURL(image)
+        imageUrls.value.push(url)
+        return url
     }
-  } catch (error) {
-    console.error('Ошибка при загрузке рецепта:', error)
-    router.push('/recipes')
-  }
-})
+    return image
+}
 
-const newTag = ref('')
+const loadRecipeData = async () => {
+    loading.value = true
+    error.value = null
+    try {
+        const recipeId = parseInt(route.params.id as string)
+        if (isNaN(recipeId)) {
+            throw new Error('Неверный ID рецепта')
+        }
+        const loadedRecipe = await loadRecipe(recipeId)
+        if (!loadedRecipe) {
+            throw new Error('Рецепт не найден')
+        }
+        recipe.value = loadedRecipe
+        form.value = {
+            title: loadedRecipe.title,
+            description: loadedRecipe.description,
+            country_id: loadedRecipe.country_id,
+            cooking_time: loadedRecipe.cooking_time,
+            tags: loadedRecipe.tags.map(tag => tag.id),
+            ingredients: loadedRecipe.ingredients.map(ing => ({
+                name: ing.name,
+                amount: ing.amount,
+                unit: ing.unit
+            })),
+            steps: loadedRecipe.steps.map(step => ({
+                description: step.description,
+                image: step.image || undefined
+            })),
+            image: loadedRecipe.image || undefined
+        }
+    } catch (e) {
+        const err = e as Error
+        error.value = err.message || 'Ошибка при загрузке рецепта'
+        showError(error.value)
+        console.error('Error loading recipe:', err)
+    } finally {
+        loading.value = false
+    }
+}
 
-// Методы для работы с формой
+const handleImageChange = (e: Event) => {
+    const target = e.target as HTMLInputElement
+    if (target.files && target.files[0]) {
+        form.value.image = target.files[0]
+    }
+}
+
+const handleStepImageChange = (e: Event, index: number) => {
+    const target = e.target as HTMLInputElement
+    if (target.files && target.files[0]) {
+        form.value.steps[index].image = target.files[0]
+    }
+}
+
 const addIngredient = () => {
-  form.value.ingredients.push({ name: '', amount: '', unit: '' })
+    form.value.ingredients.push({
+        name: '',
+        amount: '',
+        unit: ''
+    })
 }
 
 const removeIngredient = (index: number) => {
-  form.value.ingredients.splice(index, 1)
+    form.value.ingredients.splice(index, 1)
 }
 
 const addStep = () => {
-  form.value.steps.push({ description: '', image: null })
+    form.value.steps.push({
+        description: '',
+        image: undefined
+    })
 }
 
 const removeStep = (index: number) => {
-  form.value.steps.splice(index, 1)
+    form.value.steps.splice(index, 1)
 }
 
-const addTag = () => {
-  if (newTag.value.trim() && !form.value.tags.includes(newTag.value.trim())) {
-    form.value.tags.push(newTag.value.trim())
-    newTag.value = ''
-  }
-}
-
-const removeTag = (index: number) => {
-  form.value.tags.splice(index, 1)
-}
-
-const handleImageUpload = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  if (input.files && input.files[0]) {
-    form.value.image = input.files[0]
-  }
-}
-
-const handleStepImageUpload = (event: Event, index: number) => {
-  const input = event.target as HTMLInputElement
-  if (input.files && input.files[0]) {
-    form.value.steps[index].image = input.files[0]
-  }
-}
-
-// Обработка отправки формы
 const submitForm = async () => {
-  try {
-    const updatedRecipe: RecipeForm = {
-      title: form.value.title,
-      description: form.value.description,
-      country_id: form.value.country_id,
-      cooking_time: form.value.cooking_time,
-      servings: form.value.servings,
-      ingredients: form.value.ingredients.filter(ing => ing.name.trim() && ing.amount.trim()),
-      steps: form.value.steps.filter(step => step.description.trim()),
-      tags: form.value.tags.filter(Boolean),
-      image: form.value.image
+    if (!recipe.value) return
+    submitting.value = true
+    try {
+        const formData = new FormData()
+        formData.append('title', form.value.title)
+        formData.append('description', form.value.description)
+        formData.append('country_id', form.value.country_id?.toString() || '')
+        formData.append('cooking_time', form.value.cooking_time?.toString() || '')
+        form.value.tags.forEach(tagId => {
+            formData.append('tags[]', tagId.toString())
+        })
+        form.value.ingredients.forEach((ingredient, index) => {
+            formData.append(`ingredients[${index}][name]`, ingredient.name)
+            formData.append(`ingredients[${index}][amount]`, ingredient.amount)
+            formData.append(`ingredients[${index}][unit]`, ingredient.unit)
+        })
+        form.value.steps.forEach((step, index) => {
+            formData.append(`steps[${index}][description]`, step.description)
+            if (step.image instanceof File) {
+                formData.append(`steps[${index}][image]`, step.image)
+            } else if (typeof step.image === 'string') {
+                formData.append(`steps[${index}][image]`, step.image)
+            }
+        })
+        if (form.value.image instanceof File) {
+            formData.append('image', form.value.image)
+        }
+
+        await updateRecipe(recipe.value.id, formData)
+        showSuccess('Рецепт успешно обновлен')
+        router.push(`/recipes/${recipe.value.id}`)
+    } catch (e) {
+        const err = e as Error
+        showError('Ошибка при обновлении рецепта')
+        console.error('Error updating recipe:', err)
+    } finally {
+        submitting.value = false
     }
-
-    const formData = new FormData()
-    formData.append('title', updatedRecipe.title)
-    formData.append('description', updatedRecipe.description)
-    formData.append('country_id', updatedRecipe.country_id)
-    formData.append('cooking_time', updatedRecipe.cooking_time.toString())
-    formData.append('servings', updatedRecipe.servings.toString())
-    formData.append('ingredients', JSON.stringify(updatedRecipe.ingredients))
-    formData.append('steps', JSON.stringify(updatedRecipe.steps))
-    formData.append('tags', JSON.stringify(updatedRecipe.tags))
-
-    if (updatedRecipe.image instanceof File) {
-      formData.append('image', updatedRecipe.image)
-    }
-
-    await $api.put(`/recipes/${route.params.id}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-    router.push('/recipes')
-  } catch (error) {
-    console.error('Ошибка при обновлении рецепта:', error)
-  }
 }
 
-// Обработка удаления рецепта
-const handleDelete = () => {
-  if (confirm('Вы уверены, что хотите удалить этот рецепт?')) {
-    recipesStore.deleteRecipe(Number(route.params.id))
-    router.push('/recipes')
-  }
-}
+onMounted(async () => {
+    await Promise.all([
+        loadCountries(),
+        loadTags(),
+        loadRecipeData()
+    ])
+})
+
+onUnmounted(() => {
+    imageUrls.value.forEach(url => URL.revokeObjectURL(url))
+    imageUrls.value = []
+})
 </script> 

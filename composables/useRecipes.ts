@@ -5,7 +5,7 @@ export interface Recipe {
     id: number
     title: string
     description: string
-    image: string
+    image: string | null
     country_id: number
     cooking_time: number
     user_id: number
@@ -22,22 +22,41 @@ export interface Recipe {
     ingredients: {
         id: number
         name: string
-        amount: number
+        amount: string
         unit: string
     }[]
     steps: {
         id: number
         description: string
-        image: string
+        image: string | null
     }[]
 }
 
-interface RecipeFilters {
+export interface RecipeFilters {
     country_id?: number
     cooking_time?: number
     sort?: string
     direction?: string
-    tags?: number[]
+    tags?: string
+    [key: string]: string | number | undefined
+}
+
+export interface RecipeFormData {
+    title: string
+    description: string
+    country_id: number
+    cooking_time: number
+    tags: number[]
+    ingredients: {
+        name: string
+        amount: string
+        unit: string
+    }[]
+    steps: {
+        description: string
+        image?: File
+    }[]
+    image?: File
 }
 
 export const useRecipes = () => {
@@ -59,6 +78,7 @@ export const useRecipes = () => {
         try {
             const response = await api.get<Recipe>(`/api/recipes/${id}`)
             recipe.value = response
+            return response
         } catch (e) {
             console.error('Error loading recipe:', e)
             throw e
