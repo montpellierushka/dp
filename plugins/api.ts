@@ -10,20 +10,18 @@ export default defineNuxtPlugin(() => {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-Telegram-Init-Data': window.Telegram?.WebApp?.initData || ''
+            'X-Telegram-Init-Data': typeof window !== 'undefined' && window.Telegram?.WebApp?.initData || ''
         },
         withCredentials: true,
         timeout: 10000
     });
 
     // Интерцептор для добавления данных Telegram Web App
-    api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-        const initData = window.Telegram?.WebApp?.initData;
-        if (initData) {
-            config.headers = config.headers || {};
-            config.headers['X-Telegram-Init-Data'] = initData;
+    api.interceptors.request.use((config) => {
+        if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
+            config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData
         }
-        return config;
+        return config
     });
 
     // Интерцептор для обработки ошибок
