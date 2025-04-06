@@ -19,7 +19,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiUrl: 'https://montpellierushka-backend-7c0b.twc1.net/api'
+      apiUrl: 'https://montpellierushka-backend-7c0b.twc1.net'
     },
   },
 
