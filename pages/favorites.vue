@@ -1,77 +1,81 @@
 <template>
-  <PageContainer>
-    <template #header>
-      <PageTitle
-        title="Избранные рецепты"
-        description="Ваша личная коллекция любимых рецептов со всего мира"
-      />
-    </template>
+  <div>
+    <PageHeader>
+      <template #title>Избранные рецепты</template>
+    </PageHeader>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      <div 
-        v-for="recipe in favoriteRecipes" 
-        :key="recipe.id"
-        class="bg-white rounded-lg border border-gray-200 p-4"
-      >
-        <div class="aspect-w-16 aspect-h-9 mb-4">
-          <img :src="recipe.image" :alt="recipe.title" class="rounded-lg object-cover" />
-        </div>
-        <div class="flex items-start justify-between mb-2">
-          <h3 class="text-lg font-medium text-gray-900">{{ recipe.title }}</h3>
-          <button 
-            @click="toggleFavorite(recipe)"
-            class="text-red-500 hover:text-red-600 transition-colors"
-          >
-            <Icon name="heart" class="w-5 h-5" />
-          </button>
-        </div>
-        <p class="text-sm text-gray-600 mb-2">{{ recipe.description }}</p>
-        <div class="flex items-center justify-between">
-          <span class="text-sm text-gray-500">{{ recipe.cookingTime }} мин</span>
-          <span class="text-sm text-gray-500">{{ recipe.country }}</span>
-        </div>
+    <PageContainer>
+      <div v-if="loading" class="text-center py-8">
+        <div class="loading loading-spinner loading-lg"></div>
       </div>
-    </div>
 
-    <div v-if="favoriteRecipes.length === 0" class="text-center py-12">
-      <Icon name="heart-outline" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-      <h3 class="text-lg font-medium text-gray-900 mb-2">У вас пока нет избранных рецептов</h3>
-      <p class="text-gray-600 mb-4">Начните добавлять рецепты в избранное, чтобы они появились здесь</p>
-      <NuxtLink 
-        to="/recipes" 
-        class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"
-      >
-        Перейти к рецептам
-        <Icon name="arrow-right" class="ml-2 w-4 h-4" />
-      </NuxtLink>
-    </div>
-  </PageContainer>
+      <div v-else-if="error" class="alert alert-error">
+        {{ error }}
+      </div>
+
+      <div v-else-if="recipes.length === 0" class="text-center py-8">
+        <p class="text-lg">У вас пока нет избранных рецептов</p>
+        <NuxtLink to="/recipes" class="btn btn-primary mt-4">
+          Найти рецепты
+        </NuxtLink>
+      </div>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <RecipeCard
+          v-for="recipe in recipes"
+          :key="recipe.id"
+          :recipe="recipe"
+          @favorite="toggleFavorite"
+        />
+      </div>
+    </PageContainer>
+  </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useNuxtApp } from '#app'
-import PageContainer from '~/components/PageContainer.vue'
-import PageTitle from '~/components/PageTitle.vue'
+import { useApi } from '~/composables/useApi'
 
-const { $api } = useNuxtApp()
-const favoriteRecipes = ref([])
+const api = useApi()
 
-onMounted(async () => {
+const loading = ref(false)
+const error = ref('')
+const recipes = ref([])
+
+const loadFavorites = async () => {
   try {
-    const response = await $api.get('/favorites')
-    favoriteRecipes.value = response.data
-  } catch (error) {
-    console.error('Ошибка при загрузке избранных рецептов:', error)
-  }
-})
+    loading.value = true
+    error.value = ''
 
-const toggleFavorite = async (recipe) => {
-  try {
-    await $api.post(`/recipes/${recipe.id}/toggle-favorite`)
-    favoriteRecipes.value = favoriteRecipes.value.filter(r => r.id !== recipe.id)
-  } catch (error) {
-    console.error('Ошибка при удалении из избранного:', error)
+    const response = await api.get('/favorites/recipes')
+    recipes.value = response.data
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Произошла ошибка при загрузке избранных рецептов'
+    console.error('Error loading favorites:', e)
+  } finally {
+    loading.value = false
   }
 }
+
+const toggleFavorite = async (recipeId: number) => {
+  try {
+    const recipe = recipes.value.find(r => r.id === recipeId)
+    if (!recipe) return
+
+    if (recipe.favorites_count > 0) {
+      await api.delete(`/favorites/recipes/${recipeId}`)
+      recipe.favorites_count--
+      recipes.value = recipes.value.filter(r => r.id !== recipeId)
+    } else {
+      await api.post(`/favorites/recipes/${recipeId}`)
+      recipe.favorites_count++
+    }
+  } catch (e) {
+    console.error('Error toggling favorite:', e)
+  }
+}
+
+onMounted(() => {
+  loadFavorites()
+})
 </script> 

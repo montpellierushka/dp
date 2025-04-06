@@ -1,92 +1,83 @@
 <template>
-  <div class="bg-white rounded-lg shadow-md overflow-hidden">
-    <img 
-      :src="recipe.imageUrl" 
-      :alt="recipe.title"
-      class="w-full h-48 object-cover"
-    />
-    <div class="p-4">
-      <h2 class="text-xl font-semibold mb-2">{{ recipe.title }}</h2>
-      <p class="text-gray-600 mb-4">{{ recipe.description }}</p>
-      <div class="flex justify-between items-center">
-        <span class="text-sm text-gray-500">
-          {{ recipe.country }}
-        </span>
-        <div class="flex space-x-2">
-          <button 
+  <div class="card bg-base-100 shadow-xl">
+    <figure class="px-4 pt-4">
+      <img
+        :src="recipe.image || '/images/placeholder.jpg'"
+        :alt="recipe.title"
+        class="rounded-xl h-48 w-full object-cover"
+      />
+    </figure>
+    <div class="card-body">
+      <h2 class="card-title">{{ recipe.title }}</h2>
+      <p class="text-sm text-gray-500">{{ recipe.description }}</p>
+      <div class="flex gap-2 mt-2">
+        <span class="badge badge-primary">{{ recipe.country.name }}</span>
+        <span class="badge badge-secondary">{{ recipe.cooking_time }} мин</span>
+      </div>
+      <div class="card-actions justify-between items-center mt-4">
+        <div class="flex items-center gap-2">
+          <button
+            class="btn btn-ghost btn-sm"
             @click="toggleFavorite"
-            class="text-gray-500 hover:text-red-500"
           >
-            <Icon 
-              :name="isFavorite ? 'mdi:heart' : 'mdi:heart-outline'" 
-              size="24"
-            />
-          </button>
-          <button 
-            @click="likeRecipe"
-            class="text-gray-500 hover:text-blue-500"
-          >
-            <Icon 
-              :name="recipe.is_liked ? 'mdi:thumb-up' : 'mdi:thumb-up-outline'" 
-              size="24"
-            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              :class="{ 'text-red-500': isFavorite }"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+            <span>{{ recipe.favorites_count }}</span>
           </button>
         </div>
+        <NuxtLink
+          :to="`/recipes/${recipe.id}`"
+          class="btn btn-primary btn-sm"
+        >
+          Подробнее
+        </NuxtLink>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useApi } from '~/composables/useApi';
-import { useTelegram } from '~/composables/useTelegram';
+import { ref, onMounted } from 'vue'
+import { useAuth } from '~/composables/useAuth'
 
-interface Recipe {
-  id: number;
-  title: string;
-  description: string;
-  country: string;
-  cookingTime: number;
-  tags: string[];
-  rating?: number;
-  imageUrl?: string;
-  is_liked?: boolean;
-}
+const props = defineProps({
+  recipe: {
+    type: Object,
+    required: true
+  }
+})
 
-const props = defineProps<{
-  recipe: Recipe;
-}>();
+const { user } = useAuth()
+const isFavorite = ref(false)
 
-const { user } = useTelegram();
-const { post, delete: del } = useApi();
-
-const isFavorite = computed(() => {
-  return user.value?.favorites?.includes(props.recipe.id) || false;
-});
+onMounted(() => {
+  isFavorite.value = props.recipe.is_favorite
+})
 
 const toggleFavorite = async () => {
   try {
-    if (isFavorite.value) {
-      await del(`/favorites/recipes/${props.recipe.id}`);
-      user.value?.favorites?.splice(user.value.favorites.indexOf(props.recipe.id), 1);
-    } else {
-      await post(`/favorites/recipes/${props.recipe.id}`);
-      user.value?.favorites?.push(props.recipe.id);
-    }
-  } catch (err) {
-    console.error('Ошибка при изменении избранного:', err);
+    const response = await $fetch(`/api/recipes/${props.recipe.id}/favorite`, {
+      method: isFavorite.value ? 'DELETE' : 'POST'
+    })
+    isFavorite.value = !isFavorite.value
+    props.recipe.favorites_count += isFavorite.value ? 1 : -1
+  } catch (error) {
+    console.error('Error toggling favorite:', error)
   }
-};
-
-const likeRecipe = async () => {
-  try {
-    await post(`/likes/recipes/${props.recipe.id}`);
-    props.recipe.is_liked = !props.recipe.is_liked;
-  } catch (err) {
-    console.error('Ошибка при лайке рецепта:', err);
-  }
-};
+}
 </script>
 
 <style scoped>

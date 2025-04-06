@@ -1,0 +1,66 @@
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+interface User {
+    id: number
+    name: string
+    email: string
+    telegram_id: string
+}
+
+export const useAuth = () => {
+    const router = useRouter()
+    const user = ref<User | null>(null)
+    const loading = ref(false)
+    const error = ref('')
+
+    const loadUser = async () => {
+        try {
+            const response = await $fetch<User>('/api/user')
+            user.value = response
+        } catch (e) {
+            console.error('Error loading user:', e)
+        }
+    }
+
+    const login = async () => {
+        loading.value = true
+        error.value = ''
+        try {
+            const response = await $fetch<User>('/api/auth/telegram', {
+                method: 'POST',
+                body: {
+                    initData: window.Telegram.WebApp.initData
+                }
+            })
+            user.value = response
+            router.push('/')
+        } catch (e) {
+            error.value = 'Ошибка при входе'
+            console.error('Error logging in:', e)
+        } finally {
+            loading.value = false
+        }
+    }
+
+    const logout = async () => {
+        try {
+            await $fetch('/api/auth/logout', {
+                method: 'POST'
+            })
+            user.value = null
+            router.push('/auth')
+        } catch (e) {
+            console.error('Error logging out:', e)
+        }
+    }
+
+    return {
+        user,
+        loading,
+        error,
+        loadUser,
+        login,
+        logout
+    }
+} 

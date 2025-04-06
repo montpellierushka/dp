@@ -6,13 +6,22 @@
         <div class="bg-white rounded-lg shadow-md p-6">
           <h1 class="text-3xl font-bold text-gray-900 mb-6">Редактировать рецепт</h1>
           
-          <form @submit.prevent="handleSubmit" class="space-y-6">
+          <form @submit.prevent="submitForm" class="space-y-6">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Изображение</label>
-              <RecipeImageUpload 
-                :initial-image="form.imageUrl"
-                @image-uploaded="handleImageUploaded" 
-              />
+              <div class="flex items-center gap-4">
+                <img
+                  v-if="form.image"
+                  :src="form.image"
+                  class="w-32 h-32 object-cover rounded-lg"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="file-input file-input-bordered w-full"
+                  @change="handleImageUpload"
+                />
+              </div>
             </div>
 
             <div>
@@ -39,20 +48,28 @@
 
             <div>
               <label for="country" class="block text-sm font-medium text-gray-700 mb-2">Страна</label>
-              <input
+              <select
                 id="country"
-                v-model="form.country"
-                type="text"
+                v-model="form.country_id"
+                class="select select-bordered"
                 required
-                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
+                <option value="">Выберите страну</option>
+                <option
+                  v-for="country in countries"
+                  :key="country.id"
+                  :value="country.id"
+                >
+                  {{ country.name }}
+                </option>
+              </select>
             </div>
 
             <div>
               <label for="cookingTime" class="block text-sm font-medium text-gray-700 mb-2">Время приготовления (минуты)</label>
               <input
                 id="cookingTime"
-                v-model.number="form.cookingTime"
+                v-model.number="form.cooking_time"
                 type="number"
                 min="1"
                 required
@@ -69,13 +86,19 @@
                   class="flex items-center space-x-2"
                 >
                   <input
-                    v-model="form.ingredients[index].name"
+                    v-model="ingredient.name"
                     type="text"
                     required
                     class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   >
                   <input
-                    v-model="form.ingredients[index].amount"
+                    v-model="ingredient.amount"
+                    type="text"
+                    required
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  >
+                  <input
+                    v-model="ingredient.unit"
                     type="text"
                     required
                     class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -102,7 +125,7 @@
               <label for="steps" class="block text-sm font-medium text-gray-700 mb-2">Шаги приготовления</label>
               <div class="space-y-2">
                 <div 
-                  v-for="(step, index) in form.instructions" 
+                  v-for="(step, index) in form.steps" 
                   :key="index"
                   class="flex items-start space-x-2"
                 >
@@ -110,10 +133,10 @@
                     {{ index + 1 }}
                   </span>
                   <textarea
-                    :value="step"
+                    :value="step.description"
                     @input="(e: Event) => {
                       const target = e.target as HTMLTextAreaElement;
-                      form.instructions[index] = target.value;
+                      form.steps[index].description = target.value;
                     }"
                     rows="2"
                     required
@@ -141,35 +164,18 @@
               <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">Теги</label>
               <div class="space-y-2">
                 <div 
-                  v-for="(tag, index) in form.tags" 
+                  v-for="(tag, index) in tags" 
                   :key="index"
                   class="flex items-center space-x-2"
                 >
                   <input
-                    :value="tag"
-                    @input="(e: Event) => {
-                      const target = e.target as HTMLInputElement;
-                      form.tags[index] = target.value;
-                    }"
-                    type="text"
-                    required
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    type="checkbox"
+                    :value="tag.id"
+                    v-model="form.tags"
+                    class="checkbox checkbox-primary"
                   >
-                  <button
-                    type="button"
-                    @click="removeTag(index)"
-                    class="p-2 text-red-500 hover:text-red-600"
-                  >
-                    <Icon name="trash" class="w-5 h-5" />
-                  </button>
+                  <span class="label-text">{{ tag.name }}</span>
                 </div>
-                <button
-                  type="button"
-                  @click="addTag"
-                  class="text-blue-500 hover:text-blue-600 text-sm font-medium"
-                >
-                  + Добавить тег
-                </button>
               </div>
             </div>
 
@@ -203,18 +209,19 @@ import type { Recipe } from '~/types/recipe'
 interface Ingredient {
   name: string
   amount: string
+  unit: string
 }
 
 interface RecipeForm {
   title: string
   description: string
-  country: string
-  cookingTime: number
+  country_id: string
+  cooking_time: number
   servings: number
   ingredients: Ingredient[]
-  instructions: string[]
+  steps: { description: string; image: File | null }[]
   tags: string[]
-  imageUrl: string
+  image: File | null
 }
 
 const recipesStore = useRecipesStore()
@@ -228,13 +235,13 @@ const recipe = ref<Recipe | null>(null)
 const form = ref<RecipeForm>({
   title: '',
   description: '',
-  country: '',
-  cookingTime: 30,
+  country_id: '',
+  cooking_time: 30,
   servings: 1,
   ingredients: [],
-  instructions: [],
+  steps: [],
   tags: [],
-  imageUrl: ''
+  image: null
 })
 
 // Инициализация формы данными рецепта
@@ -247,16 +254,20 @@ onMounted(async () => {
     form.value = {
       title: response.data.data.title,
       description: response.data.data.description,
-      country: response.data.data.country,
-      cookingTime: response.data.data.cookingTime,
+      country_id: response.data.data.country_id,
+      cooking_time: response.data.data.cooking_time,
       servings: response.data.data.servings,
       ingredients: response.data.data.ingredients.map(ing => ({
         name: ing.name,
-        amount: ing.amount
+        amount: ing.amount,
+        unit: ing.unit
       })),
-      instructions: response.data.data.instructions,
-      tags: response.data.data.tags,
-      imageUrl: response.data.data.imageUrl || ''
+      steps: response.data.data.steps.map(step => ({
+        description: step.description,
+        image: step.image ? new File([step.image], step.image.name) : null
+      })),
+      tags: response.data.data.tags.map(tag => tag.id),
+      image: response.data.data.image ? new File([response.data.data.image], response.data.data.image.name) : null
     }
   } catch (error) {
     console.error('Ошибка при загрузке рецепта:', error)
@@ -268,7 +279,7 @@ const newTag = ref('')
 
 // Методы для работы с формой
 const addIngredient = () => {
-  form.value.ingredients.push({ name: '', amount: '' })
+  form.value.ingredients.push({ name: '', amount: '', unit: '' })
 }
 
 const removeIngredient = (index: number) => {
@@ -276,11 +287,11 @@ const removeIngredient = (index: number) => {
 }
 
 const addStep = () => {
-  form.value.instructions.push('')
+  form.value.steps.push({ description: '', image: null })
 }
 
 const removeStep = (index: number) => {
-  form.value.instructions.splice(index, 1)
+  form.value.steps.splice(index, 1)
 }
 
 const addTag = () => {
@@ -294,26 +305,54 @@ const removeTag = (index: number) => {
   form.value.tags.splice(index, 1)
 }
 
-const handleImageUploaded = (imageUrl: string) => {
-  form.value.imageUrl = imageUrl
+const handleImageUpload = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    form.value.image = input.files[0]
+  }
+}
+
+const handleStepImageUpload = (event: Event, index: number) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    form.value.steps[index].image = input.files[0]
+  }
 }
 
 // Обработка отправки формы
-const handleSubmit = async () => {
+const submitForm = async () => {
   try {
     const updatedRecipe: RecipeForm = {
       title: form.value.title,
       description: form.value.description,
-      country: form.value.country,
-      cookingTime: form.value.cookingTime,
+      country_id: form.value.country_id,
+      cooking_time: form.value.cooking_time,
       servings: form.value.servings,
       ingredients: form.value.ingredients.filter(ing => ing.name.trim() && ing.amount.trim()),
-      instructions: form.value.instructions.filter(Boolean),
+      steps: form.value.steps.filter(step => step.description.trim()),
       tags: form.value.tags.filter(Boolean),
-      imageUrl: form.value.imageUrl
+      image: form.value.image
     }
 
-    await $api.put(`/recipes/${route.params.id}`, updatedRecipe)
+    const formData = new FormData()
+    formData.append('title', updatedRecipe.title)
+    formData.append('description', updatedRecipe.description)
+    formData.append('country_id', updatedRecipe.country_id)
+    formData.append('cooking_time', updatedRecipe.cooking_time.toString())
+    formData.append('servings', updatedRecipe.servings.toString())
+    formData.append('ingredients', JSON.stringify(updatedRecipe.ingredients))
+    formData.append('steps', JSON.stringify(updatedRecipe.steps))
+    formData.append('tags', JSON.stringify(updatedRecipe.tags))
+
+    if (updatedRecipe.image instanceof File) {
+      formData.append('image', updatedRecipe.image)
+    }
+
+    await $api.put(`/recipes/${route.params.id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
     router.push('/recipes')
   } catch (error) {
     console.error('Ошибка при обновлении рецепта:', error)

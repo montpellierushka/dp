@@ -1,124 +1,130 @@
 <template>
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold mb-8">Рецепты</h1>
-        
-        <div v-if="isLoading" class="flex justify-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
+    <div>
+        <PageHeader>
+            <template #title>Рецепты</template>
+            <template #actions>
+                <NuxtLink to="/recipes/new" class="btn btn-primary">
+                    Добавить рецепт
+                </NuxtLink>
+            </template>
+        </PageHeader>
 
-        <div v-else-if="error" class="text-red-500">
-            {{ error }}
-        </div>
+        <PageContainer>
+            <RecipeFilters
+                v-model:country="filters.country"
+                v-model:tags="filters.tags"
+                v-model:cooking-time="filters.cookingTime"
+                v-model:sort="filters.sort"
+                v-model:direction="filters.direction"
+                @update:country="loadRecipes"
+                @update:tags="loadRecipes"
+                @update:cooking-time="loadRecipes"
+                @update:sort="loadRecipes"
+                @update:direction="loadRecipes"
+            />
 
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="recipe in recipes" :key="recipe.id" class="bg-white rounded-lg shadow-md overflow-hidden">
-                <img 
-                    :src="recipe.image_url" 
-                    :alt="recipe.title"
-                    class="w-full h-48 object-cover"
+            <div v-if="loading" class="text-center py-8">
+                <div class="loading loading-spinner loading-lg"></div>
+            </div>
+
+            <div v-else-if="error" class="alert alert-error">
+                {{ error }}
+            </div>
+
+            <div v-else-if="recipes.length === 0" class="text-center py-8">
+                <p class="text-lg">Рецепты не найдены</p>
+            </div>
+
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <RecipeCard
+                    v-for="recipe in recipes"
+                    :key="recipe.id"
+                    :recipe="recipe"
+                    @favorite="toggleFavorite"
                 />
-                <div class="p-4">
-                    <h2 class="text-xl font-semibold mb-2">{{ recipe.title }}</h2>
-                    <p class="text-gray-600 mb-4">{{ recipe.description }}</p>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-500">
-                            {{ recipe.country?.name || 'Без страны' }}
-                        </span>
-                        <div class="flex space-x-2">
-                            <button 
-                                @click="toggleFavorite(recipe)"
-                                class="text-gray-500 hover:text-red-500"
-                            >
-                                <Icon 
-                                    :name="isFavorite(recipe) ? 'mdi:heart' : 'mdi:heart-outline'" 
-                                    size="24"
-                                />
-                            </button>
-                            <button 
-                                @click="likeRecipe(recipe)"
-                                class="text-gray-500 hover:text-blue-500"
-                            >
-                                <Icon 
-                                    :name="recipe.is_liked ? 'mdi:thumb-up' : 'mdi:thumb-up-outline'" 
-                                    size="24"
-                                />
-                            </button>
-                        </div>
-                    </div>
+            </div>
+
+            <div v-if="totalPages > 1" class="flex justify-center mt-8">
+                <div class="join">
+                    <button
+                        v-for="page in totalPages"
+                        :key="page"
+                        class="join-item btn"
+                        :class="{ 'btn-active': currentPage === page }"
+                        @click="changePage(page)"
+                    >
+                        {{ page }}
+                    </button>
                 </div>
             </div>
-        </div>
+        </PageContainer>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useApi } from '~/composables/useApi';
-import { useTelegram } from '~/composables/useTelegram';
+import { ref, onMounted } from 'vue'
+import { useApi } from '~/composables/useApi'
 
-interface Recipe {
-    id: number;
-    title: string;
-    description: string;
-    image_url: string;
-    country?: {
-        name: string;
-    };
-    is_liked?: boolean;
+const api = useApi()
+
+const loading = ref(false)
+const error = ref('')
+const recipes = ref([])
+const currentPage = ref(1)
+const totalPages = ref(1)
+
+const filters = ref({
+    country: null,
+    tags: [],
+    cookingTime: null,
+    sort: 'created_at',
+    direction: 'desc'
+})
+
+const loadRecipes = async () => {
+    try {
+        loading.value = true
+        error.value = ''
+
+        const params = {
+            page: currentPage.value,
+            ...filters.value
+        }
+
+        const response = await api.get('/recipes', { params })
+        recipes.value = response.data.data
+        totalPages.value = response.data.last_page
+    } catch (e) {
+        error.value = e.response?.data?.message || 'Произошла ошибка при загрузке рецептов'
+        console.error('Error loading recipes:', e)
+    } finally {
+        loading.value = false
+    }
 }
 
-const { user } = useTelegram();
-const { get, post, delete: del, isLoading, error } = useApi();
+const changePage = (page: number) => {
+    currentPage.value = page
+    loadRecipes()
+}
 
-const recipes = ref<Recipe[]>([]);
-const favorites = ref(new Set<number>());
-
-const fetchRecipes = async () => {
+const toggleFavorite = async (recipeId: number) => {
     try {
-        const response = await get<{ data: Recipe[] }>('/recipes');
-        recipes.value = response.data;
-    } catch (err) {
-        console.error('Ошибка при загрузке рецептов:', err);
-    }
-};
+        const recipe = recipes.value.find(r => r.id === recipeId)
+        if (!recipe) return
 
-const isFavorite = (recipe: Recipe) => {
-    return favorites.value.has(recipe.id);
-};
-
-const toggleFavorite = async (recipe: Recipe) => {
-    try {
-        if (isFavorite(recipe)) {
-            await del(`/favorites/recipes/${recipe.id}`);
-            favorites.value.delete(recipe.id);
+        if (recipe.favorites_count > 0) {
+            await api.delete(`/favorites/recipes/${recipeId}`)
+            recipe.favorites_count--
         } else {
-            await post(`/favorites/recipes/${recipe.id}`);
-            favorites.value.add(recipe.id);
+            await api.post(`/favorites/recipes/${recipeId}`)
+            recipe.favorites_count++
         }
-    } catch (err) {
-        console.error('Ошибка при изменении избранного:', err);
+    } catch (e) {
+        console.error('Error toggling favorite:', e)
     }
-};
+}
 
-const likeRecipe = async (recipe: Recipe) => {
-    try {
-        await post(`/likes/recipes/${recipe.id}`);
-        recipe.is_liked = !recipe.is_liked;
-    } catch (err) {
-        console.error('Ошибка при лайке рецепта:', err);
-    }
-};
-
-onMounted(async () => {
-    if (user.value) {
-        await fetchRecipes();
-        // Загрузка избранного
-        try {
-            const response = await get<{ data: { recipes: Recipe[] } }>('/favorites');
-            favorites.value = new Set(response.data.recipes.map(r => r.id));
-        } catch (err) {
-            console.error('Ошибка при загрузке избранного:', err);
-        }
-    }
-});
+onMounted(() => {
+    loadRecipes()
+})
 </script> 

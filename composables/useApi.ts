@@ -1,59 +1,90 @@
 import { ref } from 'vue';
 
-interface ApiInstance {
-    get: (endpoint: string, config?: { params?: any }) => Promise<any>;
-    post: (endpoint: string, data?: any, config?: { params?: any }) => Promise<any>;
-    put: (endpoint: string, data?: any, config?: { params?: any }) => Promise<any>;
-    delete: (endpoint: string, config?: { params?: any }) => Promise<any>;
-}
-
-interface NuxtAppWithApi {
-    $api: ApiInstance;
+interface ApiResponse<T> {
+    data: T;
+    message?: string;
 }
 
 export const useApi = () => {
-    const config = useRuntimeConfig();
-    const { $api } = useNuxtApp() as unknown as NuxtAppWithApi;
-    const isLoading = ref(false);
-    const error = ref<string | null>(null);
+    const loading = ref(false);
+    const error = ref('');
 
-    const makeRequest = async <T>(
-        method: 'get' | 'post' | 'put' | 'delete',
-        endpoint: string,
-        data?: any,
-        params?: any
-    ): Promise<T> => {
+    const get = async <T>(url: string, params?: Record<string, any>): Promise<T> => {
+        loading.value = true;
+        error.value = '';
         try {
-            isLoading.value = true;
-            error.value = null;
-
-            let response;
-            if (method === 'get') {
-                response = await $api[method](endpoint, { params });
-            } else if (method === 'delete') {
-                response = await $api[method](endpoint);
-            } else {
-                response = await $api[method](endpoint, data);
-            }
+            const response = await $fetch<ApiResponse<T>>(url, {
+                params
+            });
             return response.data;
-        } catch (err: any) {
-            error.value = err.response?.data?.message || err.message;
-            throw err;
+        } catch (e) {
+            error.value = 'Ошибка при загрузке данных';
+            console.error('Error fetching data:', e);
+            throw e;
         } finally {
-            isLoading.value = false;
+            loading.value = false;
+        }
+    };
+
+    const post = async <T>(url: string, data?: any): Promise<T> => {
+        loading.value = true;
+        error.value = '';
+        try {
+            const response = await $fetch<ApiResponse<T>>(url, {
+                method: 'POST',
+                body: data
+            });
+            return response.data;
+        } catch (e) {
+            error.value = 'Ошибка при отправке данных';
+            console.error('Error posting data:', e);
+            throw e;
+        } finally {
+            loading.value = false;
+        }
+    };
+
+    const put = async <T>(url: string, data?: any): Promise<T> => {
+        loading.value = true;
+        error.value = '';
+        try {
+            const response = await $fetch<ApiResponse<T>>(url, {
+                method: 'PUT',
+                body: data
+            });
+            return response.data;
+        } catch (e) {
+            error.value = 'Ошибка при обновлении данных';
+            console.error('Error updating data:', e);
+            throw e;
+        } finally {
+            loading.value = false;
+        }
+    };
+
+    const del = async <T>(url: string): Promise<T> => {
+        loading.value = true;
+        error.value = '';
+        try {
+            const response = await $fetch<ApiResponse<T>>(url, {
+                method: 'DELETE'
+            });
+            return response.data;
+        } catch (e) {
+            error.value = 'Ошибка при удалении данных';
+            console.error('Error deleting data:', e);
+            throw e;
+        } finally {
+            loading.value = false;
         }
     };
 
     return {
-        isLoading,
+        loading,
         error,
-        get: <T>(endpoint: string, params?: any) => 
-            makeRequest<T>('get', endpoint, undefined, params),
-        post: <T>(endpoint: string, data?: any) => 
-            makeRequest<T>('post', endpoint, data),
-        put: <T>(endpoint: string, data?: any) => 
-            makeRequest<T>('put', endpoint, data),
-        delete: <T>(endpoint: string) => 
-            makeRequest<T>('delete', endpoint),
+        get,
+        post,
+        put,
+        del
     };
 }; 

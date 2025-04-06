@@ -1,21 +1,21 @@
 <template>
-  <div class="bg-white shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
-      <p v-if="description" class="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600">{{ description }}</p>
+    <div class="bg-base-200 py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold">{{ title }}</h1>
+                <div class="flex gap-4">
+                    <slot name="actions"></slot>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 defineProps({
-  title: {
-    type: String,
-    required: true
-  },
-  description: {
-    type: String,
-    default: ''
-  }
+    title: {
+        type: String,
+        required: true
+    }
 })
 </script> 

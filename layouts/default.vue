@@ -1,49 +1,27 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
-    <AppHeader />
-    
-    <main class="flex-grow container mx-auto py-6 sm:py-8 lg:py-12">
+  <div class="layout">
+    <Navbar />
+    <main class="main">
       <slot />
     </main>
-
-    <footer class="bg-white border-t border-gray-200 mt-auto">
-      <div class="container mx-auto py-4 sm:py-6">
-        <div class="text-center text-gray-500 text-xs sm:text-sm">
-          © 2024 CulinaryPassport. Все права защищены.
-        </div>
-      </div>
-    </footer>
+    <Notifications />
   </div>
 </template>
 
-<script setup>
-import AppHeader from '~/components/AppHeader.vue'
+<script setup lang="ts">
+import Navbar from '~/components/Navbar.vue'
+import Notifications from '~/components/Notifications.vue'
 </script>
 
-<style>
-.container {
-  max-width: 1280px;
-  width: 100%;
+<style scoped>
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-@media (max-width: 640px) {
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 1024px) {
-  .container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-
-@media (min-width: 1025px) {
-  .container {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
+.main {
+  flex: 1;
+  padding: 2rem;
 }
 </style> 

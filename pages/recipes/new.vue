@@ -1,211 +1,290 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
-    <Navbar />
-    <main class="max-w-3xl mx-auto py-6 sm:px-6 lg:px-8">
-      <div class="px-4 py-6 sm:px-0">
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <h1 class="text-3xl font-bold text-gray-900 mb-6">Добавить новый рецепт</h1>
-          
-          <form @submit.prevent="handleSubmit" class="space-y-6">
-            <!-- Основная информация -->
+  <div>
+    <PageHeader>
+      <template #title>Новый рецепт</template>
+    </PageHeader>
+
+    <PageContainer>
+      <form @submit.prevent="submitForm" class="space-y-8">
+        <!-- Основная информация -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title">Основная информация</h2>
             <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Название рецепта</label>
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Название</span>
+                </label>
                 <input
                   v-model="form.title"
                   type="text"
+                  class="input input-bordered"
                   required
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
+                />
               </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Страна</label>
-                <input
-                  v-model="form.country"
-                  type="text"
-                  required
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Время приготовления (минуты)</label>
-                <input
-                  v-model.number="form.cookingTime"
-                  type="number"
-                  required
-                  min="1"
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Описание</span>
+                </label>
                 <textarea
                   v-model="form.description"
+                  class="textarea textarea-bordered h-24"
                   required
-                  rows="3"
-                  class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 ></textarea>
               </div>
-            </div>
-            
-            <!-- Ингредиенты -->
-            <div>
-              <div class="flex justify-between items-center mb-2">
-                <label class="block text-sm font-medium text-gray-700">Ингредиенты</label>
-                <button
-                  type="button"
-                  @click="addIngredient"
-                  class="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  + Добавить ингредиент
-                </button>
+
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text">Изображение</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="file-input file-input-bordered w-full"
+                  @change="handleImageUpload"
+                />
               </div>
-              <div class="space-y-2">
-                <div
-                  v-for="(ingredient, index) in form.ingredients"
-                  :key="index"
-                  class="flex items-center gap-2"
-                >
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">Страна</span>
+                  </label>
+                  <select
+                    v-model="form.country_id"
+                    class="select select-bordered"
+                    required
+                  >
+                    <option value="">Выберите страну</option>
+                    <option
+                      v-for="country in countries"
+                      :key="country.id"
+                      :value="country.id"
+                    >
+                      {{ country.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">Время приготовления (мин)</span>
+                  </label>
+                  <input
+                    v-model="form.cooking_time"
+                    type="number"
+                    min="1"
+                    class="input input-bordered"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ингредиенты -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <div class="flex justify-between items-center">
+              <h2 class="card-title">Ингредиенты</h2>
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                @click="addIngredient"
+              >
+                Добавить
+              </button>
+            </div>
+            <div class="space-y-4">
+              <div
+                v-for="(ingredient, index) in form.ingredients"
+                :key="index"
+                class="flex gap-4"
+              >
+                <div class="form-control flex-1">
                   <input
                     v-model="ingredient.name"
                     type="text"
+                    class="input input-bordered"
+                    placeholder="Название"
                     required
-                    class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
+                  />
+                </div>
+                <div class="form-control w-32">
                   <input
                     v-model="ingredient.amount"
-                    type="text"
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    class="input input-bordered"
+                    placeholder="Количество"
                     required
-                    class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                  <button
-                    type="button"
-                    @click="removeIngredient(index)"
-                    class="text-red-600 hover:text-red-800"
-                  >
-                    <Icon name="trash" class="w-5 h-5" />
-                  </button>
+                  />
                 </div>
-              </div>
-            </div>
-            
-            <!-- Шаги приготовления -->
-            <div>
-              <div class="flex justify-between items-center mb-2">
-                <label class="block text-sm font-medium text-gray-700">Шаги приготовления</label>
+                <div class="form-control w-32">
+                  <input
+                    v-model="ingredient.unit"
+                    type="text"
+                    class="input input-bordered"
+                    placeholder="Ед. изм."
+                    required
+                  />
+                </div>
                 <button
                   type="button"
-                  @click="addStep"
-                  class="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  class="btn btn-ghost btn-sm"
+                  @click="removeIngredient(index)"
                 >
-                  + Добавить шаг
+                  <Icon name="mdi:delete" size="20" />
                 </button>
               </div>
-              <div class="space-y-2">
-                <div
-                  v-for="(step, index) in form.instructions"
-                  :key="index"
-                  class="flex items-start gap-2"
-                >
-                  <span class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center mt-2">
-                    {{ index + 1 }}
-                  </span>
-                  <textarea
-                    v-model="form.instructions[index]"
-                    required
-                    rows="2"
-                    class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  ></textarea>
-                  <button
-                    type="button"
-                    @click="removeStep(index)"
-                    class="text-red-600 hover:text-red-800 mt-2"
-                  >
-                    <Icon name="trash" class="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
             </div>
-            
-            <!-- Теги -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Теги</label>
-              <div class="flex flex-wrap gap-2">
-                <div
-                  v-for="(tag, index) in form.tags"
-                  :key="index"
-                  class="flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full"
-                >
-                  <span>{{ tag }}</span>
-                  <button
-                    type="button"
-                    @click="removeTag(index)"
-                    class="text-gray-500 hover:text-gray-700"
-                  >
-                    <Icon name="x" class="w-4 h-4" />
-                  </button>
-                </div>
-                <input
-                  v-model="newTag"
-                  type="text"
-                  @keydown.enter.prevent="addTag"
-                  placeholder="Добавить тег"
-                  class="px-3 py-1 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-              </div>
-            </div>
-            
-            <!-- Кнопки -->
-            <div class="flex justify-end gap-4">
-              <NuxtLink
-                to="/recipes"
-                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                Отмена
-              </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Шаги приготовления -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <div class="flex justify-between items-center">
+              <h2 class="card-title">Шаги приготовления</h2>
               <button
-                type="submit"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                type="button"
+                class="btn btn-primary btn-sm"
+                @click="addStep"
               >
-                Сохранить рецепт
+                Добавить
               </button>
             </div>
-          </form>
+            <div class="space-y-4">
+              <div
+                v-for="(step, index) in form.steps"
+                :key="index"
+                class="space-y-4"
+              >
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-medium">Шаг {{ index + 1 }}</h3>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    @click="removeStep(index)"
+                  >
+                    <Icon name="mdi:delete" size="20" />
+                  </button>
+                </div>
+                <div class="form-control">
+                  <textarea
+                    v-model="step.description"
+                    class="textarea textarea-bordered h-24"
+                    placeholder="Описание шага"
+                    required
+                  ></textarea>
+                </div>
+                <div class="form-control">
+                  <label class="label">
+                    <span class="label-text">Изображение (опционально)</span>
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    class="file-input file-input-bordered w-full"
+                    @change="(e) => handleStepImageUpload(e, index)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </main>
+
+        <!-- Теги -->
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title">Теги</h2>
+            <div class="flex flex-wrap gap-2">
+              <div
+                v-for="tag in tags"
+                :key="tag.id"
+                class="form-control"
+              >
+                <label class="label cursor-pointer gap-2">
+                  <input
+                    type="checkbox"
+                    :value="tag.id"
+                    v-model="form.tags"
+                    class="checkbox checkbox-primary"
+                  />
+                  <span class="label-text">{{ tag.name }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Кнопки -->
+        <div class="flex justify-end gap-4">
+          <NuxtLink to="/recipes" class="btn btn-ghost">Отмена</NuxtLink>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            :disabled="loading"
+          >
+            <span v-if="loading" class="loading loading-spinner"></span>
+            Создать рецепт
+          </button>
+        </div>
+      </form>
+    </PageContainer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useNuxtApp } from '#app'
+import { ref, onMounted } from 'vue'
+import { useApi } from '~/composables/useApi'
 import { useRouter } from 'vue-router'
-import type { Recipe, RecipeForm } from '~/types/recipe'
 
-const { $api } = useNuxtApp()
+const api = useApi()
 const router = useRouter()
 
-// Состояние формы
-const form = ref<RecipeForm>({
+const loading = ref(false)
+const countries = ref([])
+const tags = ref([])
+
+const form = ref({
   title: '',
   description: '',
-  country: '',
-  cookingTime: 30,
-  servings: 1,
-  ingredients: [{ name: '', amount: '' }],
-  instructions: [''],
+  image: null,
+  country_id: '',
+  cooking_time: '',
+  ingredients: [
+    { name: '', amount: '', unit: '' }
+  ],
+  steps: [
+    { description: '', image: null }
+  ],
   tags: []
 })
 
-const newTag = ref('')
+const loadCountries = async () => {
+  try {
+    const response = await api.get('/countries')
+    countries.value = response.data
+  } catch (e) {
+    console.error('Error loading countries:', e)
+  }
+}
 
-// Методы для работы с формой
+const loadTags = async () => {
+  try {
+    const response = await api.get('/tags')
+    tags.value = response.data
+  } catch (e) {
+    console.error('Error loading tags:', e)
+  }
+}
+
 const addIngredient = () => {
-  form.value.ingredients.push({ name: '', amount: '' })
+  form.value.ingredients.push({ name: '', amount: '', unit: '' })
 }
 
 const removeIngredient = (index: number) => {
@@ -213,39 +292,66 @@ const removeIngredient = (index: number) => {
 }
 
 const addStep = () => {
-  form.value.instructions.push('')
+  form.value.steps.push({ description: '', image: null })
 }
 
 const removeStep = (index: number) => {
-  form.value.instructions.splice(index, 1)
+  form.value.steps.splice(index, 1)
 }
 
-const addTag = () => {
-  if (newTag.value.trim() && !form.value.tags.includes(newTag.value.trim())) {
-    form.value.tags.push(newTag.value.trim())
-    newTag.value = ''
+const handleImageUpload = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    form.value.image = input.files[0]
   }
 }
 
-const removeTag = (index: number) => {
-  form.value.tags.splice(index, 1)
+const handleStepImageUpload = (event: Event, index: number) => {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    form.value.steps[index].image = input.files[0]
+  }
 }
 
-// Обработка отправки формы
-const handleSubmit = async () => {
+const submitForm = async () => {
   try {
-    const newRecipe: Recipe = {
-      id: Date.now(), // Временное решение для генерации ID
-      ...form.value,
-      image_url: '',
-      is_liked: false,
-      is_favorite: false
+    loading.value = true
+
+    const formData = new FormData()
+    formData.append('title', form.value.title)
+    formData.append('description', form.value.description)
+    formData.append('country_id', form.value.country_id)
+    formData.append('cooking_time', form.value.cooking_time)
+    formData.append('ingredients', JSON.stringify(form.value.ingredients))
+    formData.append('steps', JSON.stringify(form.value.steps))
+    formData.append('tags', JSON.stringify(form.value.tags))
+
+    if (form.value.image) {
+      formData.append('image', form.value.image)
     }
-    
-    await $api.post('/recipes', newRecipe)
-    router.push('/recipes')
-  } catch (error) {
-    console.error('Ошибка при создании рецепта:', error)
+
+    form.value.steps.forEach((step, index) => {
+      if (step.image) {
+        formData.append(`step_images[${index}]`, step.image)
+      }
+    })
+
+    const response = await api.post('/recipes', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    router.push(`/recipes/${response.data.id}`)
+  } catch (e) {
+    console.error('Error creating recipe:', e)
+  } finally {
+    loading.value = false
   }
 }
+
+onMounted(() => {
+  loadCountries()
+  loadTags()
+})
 </script> 
