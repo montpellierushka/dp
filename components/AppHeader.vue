@@ -173,10 +173,44 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { API_ENDPOINTS } from '~/config/api'
 
 const router = useRouter()
 const user = ref(null)
 const isMenuOpen = ref(false)
+
+const validateInitData = async () => {
+  try {
+    const response = await fetch(API_ENDPOINTS.webApp.validateInitData, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ initData: initData.value })
+    })
+
+    if (!response.ok) {
+      throw new Error('Ошибка валидации initData')
+    }
+
+    const userResponse = await fetch(API_ENDPOINTS.webApp.userInfo, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${initData.value}`
+      }
+    })
+
+    if (!userResponse.ok) {
+      throw new Error('Ошибка получения информации о пользователе')
+    }
+
+    const userData = await userResponse.json()
+    user.value = userData
+  } catch (error) {
+    console.error('Ошибка при инициализации:', error)
+    showError('Ошибка при инициализации приложения')
+  }
+}
 
 onMounted(async () => {
   try {
@@ -187,30 +221,7 @@ onMounted(async () => {
       return
     }
 
-    // Валидируем initData на бэкенде
-    const response = await fetch('/api/web-app/validate-init-data', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Telegram-Init-Data': initData
-      }
-    })
-
-    if (!response.ok) {
-      throw new Error('Invalid init data')
-    }
-
-    // Получаем информацию о пользователе
-    const userResponse = await fetch('/api/web-app/user-info', {
-      headers: {
-        'X-Telegram-Init-Data': initData
-      }
-    })
-
-    if (userResponse.ok) {
-      const userData = await userResponse.json()
-      user.value = userData.data
-    }
+    await validateInitData()
   } catch (error) {
     console.error('Auth error:', error)
     router.push('/error')

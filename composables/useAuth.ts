@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { API_ENDPOINTS } from '~/config/api'
 
 export interface User {
     id: number
@@ -46,8 +47,9 @@ export const useAuth = () => {
 
     const logout = async () => {
         try {
-            await $fetch('/api/auth/logout', {
-                method: 'POST'
+            await $fetch(API_ENDPOINTS.auth.logout, {
+                method: 'POST',
+                credentials: 'include'
             })
             user.value = null
             router.push('/auth')

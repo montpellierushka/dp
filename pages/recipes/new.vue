@@ -254,6 +254,7 @@
 import { useAuth } from '~/composables/useAuth'
 import { useNotifications } from '~/composables/useNotifications'
 import { useRouter } from 'vue-router'
+import { API_ENDPOINTS } from '~/config/api'
 
 const { user } = useAuth()
 const { showSuccess, showError } = useNotifications()
@@ -373,7 +374,7 @@ const handleSubmit = async () => {
       }
     })
 
-    const response = await fetch('/api/recipes', {
+    const response = await fetch(API_ENDPOINTS.recipes.create, {
       method: 'POST',
       body: formData
     })
