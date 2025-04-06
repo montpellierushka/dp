@@ -43,22 +43,35 @@ const error = ref('')
 
 const testGetRecipes = async () => {
   try {
+    console.log('Начало запроса к API...')
     const response = await $api.get('/recipes')
+    console.log('Ответ от API:', response)
     getResponse.value = response.data
     error.value = ''
   } catch (e: unknown) {
+    console.error('Полная ошибка:', e)
     if (e instanceof Error) {
       if ('response' in e) {
         const axiosError = e as any
         error.value = `Ошибка при получении рецептов: ${axiosError.response?.data?.message || e.message}`
-        console.error('Детали ошибки:', axiosError.response?.data)
+        console.error('Детали ошибки:', {
+          status: axiosError.response?.status,
+          data: axiosError.response?.data,
+          headers: axiosError.response?.headers
+        })
+      } else if ('request' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка сети: ${e.message}`
+        console.error('Детали запроса:', {
+          request: axiosError.request,
+          config: axiosError.config
+        })
       } else {
         error.value = `Ошибка при получении рецептов: ${e.message}`
       }
     } else {
       error.value = 'Произошла неизвестная ошибка при получении рецептов'
     }
-    console.error(e)
   }
 }
 
