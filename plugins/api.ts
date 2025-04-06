@@ -3,7 +3,7 @@ import type { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axio
 
 export default defineNuxtPlugin(() => {
     const config = useRuntimeConfig();
-    const API_URL = config.public.apiUrl || 'http://localhost:8000/api';
+    const API_URL = config.public.apiUrl || 'https://montpellierushka-backend-7c0b.twc1.net/api';
 
     const api = axios.create({
         baseURL: API_URL,
