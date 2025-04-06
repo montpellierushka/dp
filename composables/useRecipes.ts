@@ -67,9 +67,11 @@ export const useRecipes = () => {
         try {
             const response = await api.get<Recipe[]>(API_ENDPOINTS.recipes.list, filters)
             recipes.value = response
+            return response
         } catch (e) {
             console.error('Error loading recipes:', e)
             error.value = 'Ошибка при загрузке рецептов'
+            throw e
         }
     }
 
