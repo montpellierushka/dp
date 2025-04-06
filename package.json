@@ -25,8 +25,9 @@
     "@nuxtjs/color-mode": "^3.5.2",
     "@nuxtjs/tailwindcss": "^6.11.0",
     "@pinia/nuxt": "^0.5.1",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.17.30",
     "@vueuse/nuxt": "^10.7.2",
+    "typescript": "^5.8.3",
     "vue-tsc": "^2.2.8"
   }
 }
