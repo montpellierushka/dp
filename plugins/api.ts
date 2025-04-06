@@ -28,7 +28,20 @@ export default defineNuxtPlugin(() => {
     api.interceptors.response.use(
         (response: AxiosResponse) => response,
         (error: AxiosError) => {
-            console.error('API Error:', error);
+            if (error.response) {
+                // Сервер вернул ответ с кодом ошибки
+                console.error('API Error Response:', {
+                    status: error.response.status,
+                    data: error.response.data,
+                    headers: error.response.headers
+                });
+            } else if (error.request) {
+                // Запрос был сделан, но ответ не получен
+                console.error('API Error Request:', error.request);
+            } else {
+                // Произошла ошибка при настройке запроса
+                console.error('API Error:', error.message);
+            }
             return Promise.reject(error);
         }
     );

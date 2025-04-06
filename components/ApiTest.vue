@@ -48,7 +48,13 @@ const testGetRecipes = async () => {
     error.value = ''
   } catch (e: unknown) {
     if (e instanceof Error) {
-      error.value = `Ошибка при получении рецептов: ${e.message}`
+      if ('response' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка при получении рецептов: ${axiosError.response?.data?.message || e.message}`
+        console.error('Детали ошибки:', axiosError.response?.data)
+      } else {
+        error.value = `Ошибка при получении рецептов: ${e.message}`
+      }
     } else {
       error.value = 'Произошла неизвестная ошибка при получении рецептов'
     }
