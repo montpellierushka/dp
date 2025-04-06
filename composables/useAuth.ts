@@ -18,7 +18,7 @@ export const useAuth = () => {
 
     const loadUser = async () => {
         try {
-            const response = await $fetch<User>('/api/user')
+            const response = await $fetch<User>(API_ENDPOINTS.auth.user)
             user.value = response
         } catch (e) {
             console.error('Error loading user:', e)
@@ -29,7 +29,7 @@ export const useAuth = () => {
         loading.value = true
         error.value = ''
         try {
-            const response = await $fetch<User>('/api/auth/telegram', {
+            const response = await $fetch<User>(API_ENDPOINTS.auth.login, {
                 method: 'POST',
                 body: {
                     initData: window.Telegram.WebApp.initData

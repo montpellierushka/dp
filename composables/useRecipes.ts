@@ -1,35 +1,32 @@
 import { ref } from 'vue'
 import { useApi } from './useApi'
+import { API_ENDPOINTS } from '~/config/api'
 
 export interface Recipe {
     id: number
     title: string
     description: string
-    image: string | null
-    country_id: number
+    image_url: string
     cooking_time: number
-    user_id: number
-    favorites_count: number
-    is_favorite: boolean
-    country: {
-        id: number
+    country: string
+    tags: string[]
+    ingredients: Array<{
         name: string
-    }
-    tags: {
-        id: number
-        name: string
-    }[]
-    ingredients: {
-        id: number
-        name: string
-        amount: string
+        quantity: string
         unit: string
-    }[]
-    steps: {
-        id: number
+    }>
+    steps: Array<{
         description: string
-        image: string | null
-    }[]
+        image_url?: string
+    }>
+    author: {
+        id: number
+        name: string
+        photo_url: string
+    }
+    created_at: string
+    updated_at: string
+    is_favorite: boolean
 }
 
 export interface RecipeFilters {
@@ -49,7 +46,7 @@ export interface RecipeFormData {
     tags: number[]
     ingredients: {
         name: string
-        amount: string
+        quantity: string
         unit: string
     }[]
     steps: {
@@ -63,14 +60,16 @@ export const useRecipes = () => {
     const api = useApi()
     const recipes = ref<Recipe[]>([])
     const recipe = ref<Recipe | null>(null)
+    const loading = ref(false)
+    const error = ref('')
 
     const loadRecipes = async (filters: RecipeFilters = {}) => {
         try {
-            const response = await api.get<Recipe[]>('/api/recipes', filters)
+            const response = await api.get<Recipe[]>(API_ENDPOINTS.recipes.list, filters)
             recipes.value = response
         } catch (e) {
             console.error('Error loading recipes:', e)
-            throw e
+            error.value = 'Ошибка при загрузке рецептов'
         }
     }
 
@@ -87,10 +86,12 @@ export const useRecipes = () => {
 
     const createRecipe = async (data: FormData) => {
         try {
-            const response = await api.post<Recipe>('/api/recipes', data)
+            const response = await api.post<Recipe>(API_ENDPOINTS.recipes.create, data)
+            recipes.value.push(response)
             return response
         } catch (e) {
             console.error('Error creating recipe:', e)
+            error.value = 'Ошибка при создании рецепта'
             throw e
         }
     }
@@ -126,27 +127,29 @@ export const useRecipes = () => {
 
     const loadFavorites = async () => {
         try {
-            const response = await api.get<Recipe[]>('/api/recipes/favorites')
+            const response = await api.get<Recipe[]>(API_ENDPOINTS.favorites.list)
             recipes.value = response
         } catch (e) {
             console.error('Error loading favorites:', e)
-            throw e
+            error.value = 'Ошибка при загрузке избранного'
         }
     }
 
     const loadMyRecipes = async () => {
         try {
-            const response = await api.get<Recipe[]>('/api/recipes/my')
+            const response = await api.get<Recipe[]>(API_ENDPOINTS.user.recipes)
             recipes.value = response
         } catch (e) {
             console.error('Error loading my recipes:', e)
-            throw e
+            error.value = 'Ошибка при загрузке моих рецептов'
         }
     }
 
     return {
         recipes,
         recipe,
+        loading,
+        error,
         loadRecipes,
         loadRecipe,
         createRecipe,

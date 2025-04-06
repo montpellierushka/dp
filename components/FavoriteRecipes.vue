@@ -25,6 +25,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import type { Recipe } from '~/composables/useRecipes'
+import { API_ENDPOINTS } from '~/config/api'
 
 const recipes = ref<Recipe[]>([])
 const loading = ref(false)
@@ -34,11 +35,11 @@ const loadFavorites = async () => {
     loading.value = true
     error.value = ''
     try {
-        const response = await $fetch<{ data: Recipe[] }>('/api/recipes/favorites')
+        const response = await $fetch<{ data: Recipe[] }>(API_ENDPOINTS.favorites.list)
         recipes.value = response.data
     } catch (e) {
-        error.value = 'Ошибка при загрузке избранных рецептов'
         console.error('Error loading favorites:', e)
+        showError('Ошибка при загрузке избранного')
     } finally {
         loading.value = false
     }

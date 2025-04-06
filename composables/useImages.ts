@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { useApi } from './useApi'
+import { API_ENDPOINTS } from '~/config/api'
 
 interface ImageUploadResponse {
     url: string
@@ -21,7 +22,7 @@ export const useImages = () => {
         try {
             const formData = new FormData()
             formData.append('image', file)
-            const response = await api.post<ImageUploadResponse>('/api/images/upload', formData)
+            const response = await api.post<ImageUploadResponse>(API_ENDPOINTS.images.upload, formData)
             return response.url
         } catch (e) {
             error.value = 'Ошибка при загрузке изображения'

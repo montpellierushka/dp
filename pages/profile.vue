@@ -123,7 +123,7 @@ const loading = ref(false)
 const error = ref('')
 
 const favoritesCount = computed(() => {
-    return recipes.value.reduce((count: number, recipe: Recipe) => count + recipe.favorites_count, 0)
+    return recipes.value.filter(recipe => recipe.is_favorite).length
 })
 
 const loadRecipes = async () => {

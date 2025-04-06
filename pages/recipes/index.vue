@@ -21,7 +21,7 @@
             <button
                 v-if="user"
                 class="btn btn-primary"
-                @click="router.push('/recipes/create')"
+                @click="router.push('/recipes/new')"
             >
                 Создать рецепт
             </button>
@@ -35,24 +35,24 @@
             >
                 <figure class="px-4 pt-4">
                     <img
-                        :src="recipe.image || '/images/placeholder.jpg'"
+                        :src="recipe.image_url || '/images/placeholder.jpg'"
                         :alt="recipe.title"
                         class="rounded-xl h-48 w-full object-cover"
                     />
                 </figure>
                 <div class="card-body">
                     <h2 class="card-title">{{ recipe.title }}</h2>
-                    <p class="text-gray-500">{{ recipe.country.name }}</p>
+                    <p class="text-gray-500">{{ recipe.country }}</p>
                     <p class="text-gray-500">
                         Время приготовления: {{ recipe.cooking_time }} мин.
                     </p>
                     <div class="flex flex-wrap gap-2 mt-2">
                         <span
                             v-for="tag in recipe.tags"
-                            :key="tag.id"
+                            :key="tag"
                             class="badge badge-primary"
                         >
-                            {{ tag.name }}
+                            {{ tag }}
                         </span>
                     </div>
                     <div class="card-actions justify-end mt-4">
@@ -98,20 +98,18 @@ const recipes = ref<Recipe[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
-const loadRecipesData = async () => {
+const loadRecipesData = async (): Promise<void> => {
     loading.value = true
     error.value = null
     try {
         const loadedRecipes = await loadRecipes()
-        if (Array.isArray(loadedRecipes)) {
-            recipes.value = loadedRecipes
-        } else {
+        if (!Array.isArray(loadedRecipes)) {
             throw new Error('Ошибка при загрузке рецептов: неверный формат данных')
         }
+        recipes.value = loadedRecipes
     } catch (e) {
-        const err = e as Error
-        error.value = err.message || 'Ошибка при загрузке рецептов'
-        console.error('Error loading recipes:', err)
+        error.value = e instanceof Error ? e.message : 'Ошибка при загрузке рецептов'
+        console.error('Error loading recipes:', e)
     } finally {
         loading.value = false
     }

@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { useApi } from './useApi'
+import { API_ENDPOINTS } from '~/config/api'
 
 export interface Tag {
     id: number
@@ -15,23 +15,27 @@ interface TagValidation {
 export const useTags = () => {
     const api = useApi()
     const tags = ref<Tag[]>([])
+    const loading = ref(false)
+    const error = ref('')
 
     const loadTags = async () => {
         try {
-            const response = await api.get<Tag[]>('/api/tags')
+            const response = await api.get<Tag[]>(API_ENDPOINTS.tags.list)
             tags.value = response
         } catch (e) {
             console.error('Error loading tags:', e)
-            throw e
+            error.value = 'Ошибка при загрузке тегов'
         }
     }
 
     const createTag = async (name: string) => {
         try {
-            const response = await api.post<Tag>('/api/tags', { name })
+            const response = await api.post<Tag>(API_ENDPOINTS.tags.create, { name })
+            tags.value.push(response)
             return response
         } catch (e) {
             console.error('Error creating tag:', e)
+            error.value = 'Ошибка при создании тега'
             throw e
         }
     }
@@ -57,6 +61,8 @@ export const useTags = () => {
 
     return {
         tags,
+        loading,
+        error,
         loadTags,
         createTag,
         updateTag,

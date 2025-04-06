@@ -62,7 +62,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div v-for="recipe in recipes" :key="recipe.id" class="card bg-base-100 shadow-xl">
                         <figure class="px-4 pt-4">
-                            <img :src="recipe.image || '/images/placeholder.jpg'" :alt="recipe.title" class="rounded-xl h-48 w-full object-cover" />
+                            <img :src="recipe.image_url || '/images/placeholder.jpg'" :alt="recipe.title" class="rounded-xl h-48 w-full object-cover" />
                         </figure>
                         <div class="card-body">
                             <h4 class="card-title">{{ recipe.title }}</h4>
@@ -82,6 +82,7 @@
 import { ref, onMounted } from 'vue'
 import type { User } from '~/composables/useAuth'
 import type { Recipe } from '~/composables/useRecipes'
+import { API_ENDPOINTS } from '~/config/api'
 
 interface UserForm {
     name: string
@@ -129,7 +130,7 @@ const updateProfile = async () => {
             formData.append('photo', blob, 'photo.jpg')
         }
 
-        const response = await $fetch<{ data: User }>('/api/user/profile', {
+        const response = await $fetch<{ data: User }>(API_ENDPOINTS.user.profile, {
             method: 'PUT',
             body: formData
         })
@@ -144,7 +145,7 @@ const updateProfile = async () => {
 
 const loadRecipes = async () => {
     try {
-        const response = await $fetch<{ data: Recipe[] }>('/api/recipes/my')
+        const response = await $fetch<{ data: Recipe[] }>(API_ENDPOINTS.user.recipes)
         recipes.value = response.data
     } catch (error) {
         console.error('Error loading recipes:', error)
