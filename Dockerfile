@@ -9,10 +9,9 @@ WORKDIR /app
 
 # Копируем файлы зависимостей
 COPY package*.json ./
-COPY .npmrc ./
 
 # Устанавливаем зависимости
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Копируем исходный код
 COPY . .
@@ -28,11 +27,10 @@ WORKDIR /app
 
 # Копируем только необходимые файлы из этапа сборки
 COPY --from=builder /app/.output /app/.output
-COPY --from=builder /app/package*.json /app/
-COPY --from=builder /app/.env* /app/
+COPY --from=builder /app/package.json /app/package.json
 
 # Устанавливаем только production зависимости
-RUN npm ci --only=production
+RUN npm install --production --legacy-peer-deps
 
 # Открываем порт
 EXPOSE 3000
