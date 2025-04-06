@@ -6,23 +6,46 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     '@pinia/nuxt',
+    '@vueuse/nuxt',
     'nuxt-icon'
   ],
 
   colorMode: {
-    preference: 'light',
+    preference: 'system',
     fallback: 'light',
+    classPrefix: '',
     classSuffix: ''
+  },
+
+  runtimeConfig: {
+    public: {
+      apiUrl: 'https://montpellierushka-backend-7c0b.twc1.net/api'
+    },
+  },
+
+  typescript: {
+    strict: true,
+    typeCheck: true,
+  },
+
+  build: {
+    transpile: ['axios'],
   },
 
   app: {
     head: {
-      title: 'CulinaryPassport',
+      title: 'Travel & Food App',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Ваш гид по кулинарным путешествиям по всему миру' }
-      ]
+        { name: 'description', content: 'Travel and food application for Telegram' },
+      ],
+      script: [
+        {
+          src: 'https://telegram.org/js/telegram-web-app.js',
+          async: true,
+        },
+      ],
     }
   },
 

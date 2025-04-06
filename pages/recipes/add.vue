@@ -182,12 +182,13 @@
   </PageContainer>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useNuxtApp } from '#app'
 import { useRouter } from 'vue-router'
 import PageContainer from '~/components/PageContainer.vue'
 import PageTitle from '~/components/PageTitle.vue'
+import type { RecipeForm, Ingredient } from '~/types/recipe'
 
 const { $api } = useNuxtApp()
 const router = useRouter()
@@ -197,12 +198,12 @@ const countries = ['Италия', 'Франция', 'Испания', 'Япон
 const availableTags = ['Завтрак', 'Обед', 'Ужин', 'Десерт', 'Вегетарианское', 'Острое', 'Сладкое', 'Соленое']
 
 // Новый рецепт
-const recipe = ref({
+const recipe = ref<RecipeForm>({
   title: '',
   description: '',
   country: '',
-  cookingTime: '',
-  servings: '',
+  cookingTime: 30,
+  servings: 1,
   ingredients: [{ name: '', amount: '' }],
   instructions: [''],
   tags: []
@@ -212,7 +213,7 @@ const addIngredient = () => {
   recipe.value.ingredients.push({ name: '', amount: '' })
 }
 
-const removeIngredient = (index) => {
+const removeIngredient = (index: number) => {
   recipe.value.ingredients.splice(index, 1)
 }
 
@@ -220,11 +221,11 @@ const addInstruction = () => {
   recipe.value.instructions.push('')
 }
 
-const removeInstruction = (index) => {
+const removeInstruction = (index: number) => {
   recipe.value.instructions.splice(index, 1)
 }
 
-const toggleTag = (tag) => {
+const toggleTag = (tag: string) => {
   const index = recipe.value.tags.indexOf(tag)
   if (index === -1) {
     recipe.value.tags.push(tag)

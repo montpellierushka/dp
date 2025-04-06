@@ -2,18 +2,18 @@
   <PageContainer>
     <template #header>
       <PageTitle
-        :title="recipe.title"
-        :description="recipe.description"
+        :title="recipe?.title || ''"
+        :description="recipe?.description || ''"
       />
     </template>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div v-if="recipe" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Основная информация -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Изображение -->
         <div class="bg-white rounded-lg border border-gray-200 p-4">
           <div class="aspect-w-16 aspect-h-9">
-            <img :src="recipe.image" :alt="recipe.title" class="rounded-lg object-cover" />
+            <img :src="recipe.image_url" :alt="recipe.title" class="rounded-lg object-cover" />
           </div>
         </div>
 
@@ -22,12 +22,12 @@
           <h2 class="text-xl font-medium text-gray-900 mb-4">Ингредиенты</h2>
           <ul class="space-y-2">
             <li 
-              v-for="(amount, ingredient) in recipe.ingredients" 
-              :key="ingredient"
+              v-for="ingredient in recipe.ingredients" 
+              :key="ingredient.name"
               class="flex items-center justify-between"
             >
-              <span class="text-gray-900">{{ ingredient }}</span>
-              <span class="text-gray-500">{{ amount }}</span>
+              <span class="text-gray-900">{{ ingredient.name }}</span>
+              <span class="text-gray-500">{{ ingredient.amount }}</span>
             </li>
           </ul>
         </div>
@@ -115,29 +115,31 @@
   </PageContainer>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useNuxtApp } from '#app'
 import { useRoute } from 'vue-router'
 import PageContainer from '~/components/PageContainer.vue'
 import PageTitle from '~/components/PageTitle.vue'
+import type { Recipe } from '~/types/recipe'
 
 const { $api } = useNuxtApp()
 const route = useRoute()
-const recipe = ref({})
+const recipe = ref<Recipe | null>(null)
 const isFavorite = ref(false)
 
 onMounted(async () => {
   try {
-    const response = await $api.get(`/recipes/${route.params.id}`)
-    recipe.value = response.data
-    isFavorite.value = response.data.isFavorite
+    const response = await $api.get<{ data: Recipe }>(`/recipes/${route.params.id}`)
+    recipe.value = response.data.data
+    isFavorite.value = response.data.data.is_favorite || false
   } catch (error) {
     console.error('Ошибка при загрузке рецепта:', error)
   }
 })
 
 const toggleFavorite = async () => {
+  if (!recipe.value) return
   try {
     await $api.post(`/recipes/${recipe.value.id}/toggle-favorite`)
     isFavorite.value = !isFavorite.value
@@ -147,6 +149,7 @@ const toggleFavorite = async () => {
 }
 
 const shareRecipe = () => {
+  if (!recipe.value) return
   if (navigator.share) {
     navigator.share({
       title: recipe.value.title,

@@ -69,7 +69,13 @@
                   class="flex items-center space-x-2"
                 >
                   <input
-                    v-model="form.ingredients[index]"
+                    v-model="form.ingredients[index].name"
+                    type="text"
+                    required
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  >
+                  <input
+                    v-model="form.ingredients[index].amount"
                     type="text"
                     required
                     class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -96,7 +102,7 @@
               <label for="steps" class="block text-sm font-medium text-gray-700 mb-2">Шаги приготовления</label>
               <div class="space-y-2">
                 <div 
-                  v-for="(step, index) in form.steps" 
+                  v-for="(step, index) in form.instructions" 
                   :key="index"
                   class="flex items-start space-x-2"
                 >
@@ -104,7 +110,11 @@
                     {{ index + 1 }}
                   </span>
                   <textarea
-                    v-model="form.steps[index]"
+                    :value="step"
+                    @input="(e: Event) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      form.instructions[index] = target.value;
+                    }"
                     rows="2"
                     required
                     class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -136,7 +146,11 @@
                   class="flex items-center space-x-2"
                 >
                   <input
-                    v-model="form.tags[index]"
+                    :value="tag"
+                    @input="(e: Event) => {
+                      const target = e.target as HTMLInputElement;
+                      form.tags[index] = target.value;
+                    }"
                     type="text"
                     required
                     class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -183,34 +197,69 @@
 <script setup lang="ts">
 import { useRecipesStore } from '~/stores/recipes'
 import { useRouter, useRoute } from 'vue-router'
+import { $api } from '~/services/api'
+import type { Recipe } from '~/types/recipe'
+
+interface Ingredient {
+  name: string
+  amount: string
+}
+
+interface RecipeForm {
+  title: string
+  description: string
+  country: string
+  cookingTime: number
+  servings: number
+  ingredients: Ingredient[]
+  instructions: string[]
+  tags: string[]
+  imageUrl: string
+}
 
 const recipesStore = useRecipesStore()
 const router = useRouter()
 const route = useRoute()
 
 // Загрузка данных рецепта
-const recipe = computed(() => {
-  return recipesStore.getRecipeById(Number(route.params.id))
-})
+const recipe = ref<Recipe | null>(null)
 
 // Состояние формы
-const form = ref({
-  id: Number(route.params.id),
+const form = ref<RecipeForm>({
   title: '',
   description: '',
   country: '',
   cookingTime: 30,
-  ingredients: [''],
-  steps: [''],
+  servings: 1,
+  ingredients: [],
+  instructions: [],
   tags: [],
   imageUrl: ''
 })
 
 // Инициализация формы данными рецепта
-onMounted(() => {
-  if (recipe.value) {
-    form.value = { ...recipe.value }
-  } else {
+onMounted(async () => {
+  try {
+    const response = await $api.get<{ data: Recipe }>(`/recipes/${route.params.id}`)
+    recipe.value = response.data.data
+    
+    // Преобразуем данные рецепта в формат формы
+    form.value = {
+      title: response.data.data.title,
+      description: response.data.data.description,
+      country: response.data.data.country,
+      cookingTime: response.data.data.cookingTime,
+      servings: response.data.data.servings,
+      ingredients: response.data.data.ingredients.map(ing => ({
+        name: ing.name,
+        amount: ing.amount
+      })),
+      instructions: response.data.data.instructions,
+      tags: response.data.data.tags,
+      imageUrl: response.data.data.imageUrl || ''
+    }
+  } catch (error) {
+    console.error('Ошибка при загрузке рецепта:', error)
     router.push('/recipes')
   }
 })
@@ -219,19 +268,19 @@ const newTag = ref('')
 
 // Методы для работы с формой
 const addIngredient = () => {
-  form.value.ingredients.push('')
+  form.value.ingredients.push({ name: '', amount: '' })
 }
 
-const removeIngredient = (index) => {
+const removeIngredient = (index: number) => {
   form.value.ingredients.splice(index, 1)
 }
 
 const addStep = () => {
-  form.value.steps.push('')
+  form.value.instructions.push('')
 }
 
-const removeStep = (index) => {
-  form.value.steps.splice(index, 1)
+const removeStep = (index: number) => {
+  form.value.instructions.splice(index, 1)
 }
 
 const addTag = () => {
@@ -241,7 +290,7 @@ const addTag = () => {
   }
 }
 
-const removeTag = (index) => {
+const removeTag = (index: number) => {
   form.value.tags.splice(index, 1)
 }
 
@@ -250,16 +299,25 @@ const handleImageUploaded = (imageUrl: string) => {
 }
 
 // Обработка отправки формы
-const handleSubmit = () => {
-  const updatedRecipe = {
-    ...form.value,
-    ingredients: form.value.ingredients.filter(Boolean),
-    steps: form.value.steps.filter(Boolean),
-    tags: form.value.tags.filter(Boolean)
+const handleSubmit = async () => {
+  try {
+    const updatedRecipe: RecipeForm = {
+      title: form.value.title,
+      description: form.value.description,
+      country: form.value.country,
+      cookingTime: form.value.cookingTime,
+      servings: form.value.servings,
+      ingredients: form.value.ingredients.filter(ing => ing.name.trim() && ing.amount.trim()),
+      instructions: form.value.instructions.filter(Boolean),
+      tags: form.value.tags.filter(Boolean),
+      imageUrl: form.value.imageUrl
+    }
+
+    await $api.put(`/recipes/${route.params.id}`, updatedRecipe)
+    router.push('/recipes')
+  } catch (error) {
+    console.error('Ошибка при обновлении рецепта:', error)
   }
-  
-  recipesStore.updateRecipe(Number(route.params.id), updatedRecipe)
-  router.push(`/recipes/${route.params.id}`)
 }
 
 // Обработка удаления рецепта

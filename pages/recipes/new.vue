@@ -70,7 +70,13 @@
                   class="flex items-center gap-2"
                 >
                   <input
-                    v-model="form.ingredients[index]"
+                    v-model="ingredient.name"
+                    type="text"
+                    required
+                    class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                  <input
+                    v-model="ingredient.amount"
                     type="text"
                     required
                     class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -100,7 +106,7 @@
               </div>
               <div class="space-y-2">
                 <div
-                  v-for="(step, index) in form.steps"
+                  v-for="(step, index) in form.instructions"
                   :key="index"
                   class="flex items-start gap-2"
                 >
@@ -108,7 +114,7 @@
                     {{ index + 1 }}
                   </span>
                   <textarea
-                    v-model="form.steps[index]"
+                    v-model="form.instructions[index]"
                     required
                     rows="2"
                     class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -174,21 +180,24 @@
   </div>
 </template>
 
-<script setup>
-import { useRecipesStore } from '~/stores/recipes'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useNuxtApp } from '#app'
 import { useRouter } from 'vue-router'
+import type { Recipe, RecipeForm } from '~/types/recipe'
 
-const recipesStore = useRecipesStore()
+const { $api } = useNuxtApp()
 const router = useRouter()
 
 // Состояние формы
-const form = ref({
+const form = ref<RecipeForm>({
   title: '',
   description: '',
   country: '',
   cookingTime: 30,
-  ingredients: [''],
-  steps: [''],
+  servings: 1,
+  ingredients: [{ name: '', amount: '' }],
+  instructions: [''],
   tags: []
 })
 
@@ -196,19 +205,19 @@ const newTag = ref('')
 
 // Методы для работы с формой
 const addIngredient = () => {
-  form.value.ingredients.push('')
+  form.value.ingredients.push({ name: '', amount: '' })
 }
 
-const removeIngredient = (index) => {
+const removeIngredient = (index: number) => {
   form.value.ingredients.splice(index, 1)
 }
 
 const addStep = () => {
-  form.value.steps.push('')
+  form.value.instructions.push('')
 }
 
-const removeStep = (index) => {
-  form.value.steps.splice(index, 1)
+const removeStep = (index: number) => {
+  form.value.instructions.splice(index, 1)
 }
 
 const addTag = () => {
@@ -218,18 +227,25 @@ const addTag = () => {
   }
 }
 
-const removeTag = (index) => {
+const removeTag = (index: number) => {
   form.value.tags.splice(index, 1)
 }
 
 // Обработка отправки формы
-const handleSubmit = () => {
-  const newRecipe = {
-    id: Date.now(), // Временное решение для генерации ID
-    ...form.value
+const handleSubmit = async () => {
+  try {
+    const newRecipe: Recipe = {
+      id: Date.now(), // Временное решение для генерации ID
+      ...form.value,
+      image_url: '',
+      is_liked: false,
+      is_favorite: false
+    }
+    
+    await $api.post('/recipes', newRecipe)
+    router.push('/recipes')
+  } catch (error) {
+    console.error('Ошибка при создании рецепта:', error)
   }
-  
-  recipesStore.addRecipe(newRecipe)
-  router.push('/recipes')
 }
 </script> 

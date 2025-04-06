@@ -45,7 +45,7 @@
           multiple
         >
         <button
-          @click="$refs.fileInput.click()"
+          @click="fileInput?.click()"
           class="w-full h-32 sm:h-40 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
         >
           <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,23 +70,33 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useApi } from '~/composables/useApi'
 
-const props = defineProps({
-  modelValue: {
-    type: Array,
-    default: () => []
-  }
+interface Props {
+  modelValue?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: undefined
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+}>()
 
-const fileInput = ref(null)
+const { post } = useApi()
+const fileInput = ref<HTMLInputElement | null>(null)
 const error = ref('')
-const images = ref(props.modelValue)
+const images = ref<string[]>(props.modelValue ? [props.modelValue] : [])
 
-const handleFileUpload = (event) => {
-  const files = event.target.files
+const handleFileUpload = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const files = input.files
   error.value = ''
+
+  if (!files || files.length === 0) {
+    return
+  }
 
   if (files.length + images.value.length > 5) {
     error.value = 'Можно загрузить не более 5 изображений'
@@ -104,17 +114,29 @@ const handleFileUpload = (event) => {
       return
     }
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      images.value.push(e.target.result)
-      emit('update:modelValue', images.value)
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+      
+      const response = await post<{ url: string }>('/upload', {
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      
+      const newImageUrl = response.url
+      images.value.push(newImageUrl)
+      emit('update:modelValue', images.value.join(','))
+    } catch (e) {
+      console.error('Ошибка при загрузке изображения:', e)
+      error.value = 'Произошла ошибка при загрузке изображения'
     }
-    reader.readAsDataURL(file)
   }
 }
 
-const removeImage = (index) => {
+const removeImage = (index: number) => {
   images.value.splice(index, 1)
-  emit('update:modelValue', images.value)
+  emit('update:modelValue', images.value.join(','))
 }
 </script> 
