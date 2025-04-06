@@ -23,10 +23,8 @@ export default defineNuxtPlugin(() => {
             data: config.data
         });
         
-        // Добавляем initData только если он есть и запрос не публичный
-        if (typeof window !== 'undefined' && 
-            window.Telegram?.WebApp?.initData && 
-            !config.url?.startsWith('/public')) {
+        // Добавляем initData только если он есть
+        if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
             config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData
         }
         return config
