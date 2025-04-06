@@ -75,7 +75,7 @@ export const useRecipes = () => {
 
     const loadRecipe = async (id: number) => {
         try {
-            const response = await api.get<Recipe>(`/api/recipes/${id}`)
+            const response = await api.get<Recipe>(API_ENDPOINTS.recipes.get(id))
             recipe.value = response
             return response
         } catch (e) {
@@ -98,7 +98,7 @@ export const useRecipes = () => {
 
     const updateRecipe = async (id: number, data: FormData) => {
         try {
-            const response = await api.put<Recipe>(`/api/recipes/${id}`, data)
+            const response = await api.put<Recipe>(API_ENDPOINTS.recipes.update(id), data)
             return response
         } catch (e) {
             console.error('Error updating recipe:', e)
@@ -108,7 +108,7 @@ export const useRecipes = () => {
 
     const deleteRecipe = async (id: number) => {
         try {
-            await api.del(`/api/recipes/${id}`)
+            await api.del(API_ENDPOINTS.recipes.delete(id))
         } catch (e) {
             console.error('Error deleting recipe:', e)
             throw e
@@ -117,7 +117,7 @@ export const useRecipes = () => {
 
     const toggleFavorite = async (id: number) => {
         try {
-            const response = await api.post<Recipe>(`/api/recipes/${id}/favorite`)
+            const response = await api.post<Recipe>(API_ENDPOINTS.favorites.add(id))
             return response
         } catch (e) {
             console.error('Error toggling favorite:', e)
