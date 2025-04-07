@@ -164,7 +164,6 @@ const testCreateRecipe = async () => {
     const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.recipes.create}`, {
       method: 'POST',
       body: formData,
-      credentials: 'include',
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
