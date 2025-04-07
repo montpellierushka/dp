@@ -120,7 +120,7 @@
 </template>
 
 <script setup>
-import { useRecipesStore } from '~/stores/recipes'
+import { useRecipesStore, LocalRecipe } from '~/stores/recipes'
 
 const props = defineProps({
   recipeId: {

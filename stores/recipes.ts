@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-export interface Recipe {
+export interface LocalRecipe {
   id: number
   title: string
   description: string
@@ -147,7 +147,7 @@ export const useRecipesStore = defineStore('recipes', {
         imageUrl: 'https://images.unsplash.com/photo-1541014741257-de529411b96a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80',
         reviews: []
       }
-    ] as Recipe[]
+    ] as LocalRecipe[]
   }),
   
   getters: {
@@ -172,11 +172,11 @@ export const useRecipesStore = defineStore('recipes', {
   },
 
   actions: {
-    addRecipe(recipe: Recipe) {
+    addRecipe(recipe: LocalRecipe) {
       this.recipes.push(recipe)
     },
 
-    updateRecipe(recipeId: number, updatedRecipe: Partial<Recipe>) {
+    updateRecipe(recipeId: number, updatedRecipe: Partial<LocalRecipe>) {
       const index = this.recipes.findIndex(r => r.id === recipeId)
       if (index !== -1) {
         this.recipes[index] = { ...this.recipes[index], ...updatedRecipe }

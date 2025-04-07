@@ -263,7 +263,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRecipesStore } from '~/stores/recipes'
+import { useRecipesStore, LocalRecipe } from '~/stores/recipes'
 import RouteMap from '~/components/RouteMap.vue'
 import PageContainer from '~/components/PageContainer.vue'
 import PageTitle from '~/components/PageTitle.vue'
