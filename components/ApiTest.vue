@@ -160,13 +160,12 @@ const testCreateRecipe = async () => {
       { description: 'Шаг 2' }
     ]))
 
-    // Используем fetch напрямую, чтобы избежать проблем с заголовками
+    console.log('Начало запроса к API...')
     const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.recipes.create}`, {
       method: 'POST',
       body: formData,
       headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
+        'Accept': 'application/json'
       }
     })
 
@@ -178,12 +177,12 @@ const testCreateRecipe = async () => {
     const data = await response.json()
     postResponse.value = data
   } catch (e: unknown) {
+    console.error('Полная ошибка:', e)
     if (e instanceof Error) {
       error.value = `Ошибка при создании рецепта: ${e.message}`
     } else {
       error.value = 'Произошла неизвестная ошибка при создании рецепта'
     }
-    console.error(e)
   } finally {
     isLoading.value = false
   }
@@ -199,9 +198,12 @@ const testDeleteRecipe = async () => {
     isLoading.value = true
     error.value = ''
     
+    console.log('Начало запроса к API...')
     const response = await $api.delete(API_ENDPOINTS.recipes.delete(Number(recipeIdToDelete.value)))
+    console.log('Ответ от API:', response)
     deleteResponse.value = response
   } catch (e: unknown) {
+    console.error('Полная ошибка:', e)
     if (e instanceof Error) {
       if ('response' in e) {
         const axiosError = e as any
@@ -224,7 +226,6 @@ const testDeleteRecipe = async () => {
     } else {
       error.value = 'Произошла неизвестная ошибка при удалении рецепта'
     }
-    console.error(e)
   } finally {
     isLoading.value = false
   }
@@ -235,8 +236,9 @@ const testCors = async () => {
     isLoading.value = true
     error.value = ''
     
-    // Используем существующий эндпоинт вместо /api/health
+    console.log('Начало запроса к API...')
     const response = await $api.get(API_ENDPOINTS.recipes.list)
+    console.log('Ответ от API:', response)
     corsResponse.value = {
       status: response.status,
       statusText: response.statusText,
@@ -244,6 +246,7 @@ const testCors = async () => {
       data: response.data
     }
   } catch (e: unknown) {
+    console.error('Полная ошибка:', e)
     if (e instanceof Error) {
       if ('response' in e) {
         const axiosError = e as any
@@ -266,7 +269,6 @@ const testCors = async () => {
     } else {
       error.value = 'Произошла неизвестная ошибка при проверке CORS'
     }
-    console.error(e)
   } finally {
     isLoading.value = false
   }

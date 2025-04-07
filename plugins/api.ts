@@ -16,9 +16,10 @@ export default defineNuxtPlugin(() => {
 
     // Интерцептор для добавления initData
     api.interceptors.request.use((config) => {
-        if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
-            config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData;
-        }
+        // Отключаем добавление заголовка X-Telegram-Init-Data
+        // if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
+        //     config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData;
+        // }
         return config;
     });
 
@@ -62,27 +63,27 @@ export default defineNuxtPlugin(() => {
                     tag_id?: number;
                     search?: string;
                 }) => 
-                    api.get('/recipes', { params }),
+                    api.get('/api/recipes', { params }),
 
                 getRecipe: (id: number) => 
-                    api.get(`/recipes/${id}`),
+                    api.get(`/api/recipes/${id}`),
 
                 createRecipe: (data: FormData) => 
-                    api.post('/recipes', data, {
+                    api.post('/api/recipes', data, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
                     }),
 
                 updateRecipe: (id: number, data: FormData) => 
-                    api.post(`/recipes/${id}`, data, {
+                    api.post(`/api/recipes/${id}`, data, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
                     }),
 
                 deleteRecipe: (id: number) => 
-                    api.delete(`/recipes/${id}`),
+                    api.delete(`/api/recipes/${id}`),
             },
             routeApi: {
                 getRoutes: (params?: { 
