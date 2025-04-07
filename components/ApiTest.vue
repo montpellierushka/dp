@@ -160,32 +160,27 @@ const testCreateRecipe = async () => {
       { description: 'Шаг 2' }
     ]))
 
-    const response = await $api.post(API_ENDPOINTS.recipes.create, formData, {
+    // Используем fetch напрямую, чтобы избежать проблем с заголовками
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.recipes.create}`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
       }
     })
-    postResponse.value = response
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null)
+      throw new Error(errorData?.message || `Ошибка при создании рецепта: ${response.status}`)
+    }
+
+    const data = await response.json()
+    postResponse.value = data
   } catch (e: unknown) {
     if (e instanceof Error) {
-      if ('response' in e) {
-        const axiosError = e as any
-        error.value = `Ошибка при создании рецепта: ${axiosError.response?.data?.message || e.message}`
-        console.error('Детали ошибки:', {
-          status: axiosError.response?.status,
-          data: axiosError.response?.data,
-          headers: axiosError.response?.headers
-        })
-      } else if ('request' in e) {
-        const axiosError = e as any
-        error.value = `Ошибка сети: ${e.message}`
-        console.error('Детали запроса:', {
-          request: axiosError.request,
-          config: axiosError.config
-        })
-      } else {
-        error.value = `Ошибка при создании рецепта: ${e.message}`
-      }
+      error.value = `Ошибка при создании рецепта: ${e.message}`
     } else {
       error.value = 'Произошла неизвестная ошибка при создании рецепта'
     }
@@ -241,7 +236,8 @@ const testCors = async () => {
     isLoading.value = true
     error.value = ''
     
-    const response = await $api.get('/api/health')
+    // Используем существующий эндпоинт вместо /api/health
+    const response = await $api.get(API_ENDPOINTS.recipes.list)
     corsResponse.value = {
       status: response.status,
       statusText: response.statusText,
