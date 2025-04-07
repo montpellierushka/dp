@@ -147,39 +147,51 @@ const testCreateRecipe = async () => {
     const formData = new FormData()
     formData.append('title', 'Тестовый рецепт')
     formData.append('description', 'Это тестовый рецепт для проверки API')
-    formData.append('country', 'Россия')
+    formData.append('country_id', '1') // ID страны из базы данных
     formData.append('cooking_time', '30')
     formData.append('servings', '4')
-    formData.append('tags', JSON.stringify(['тест', 'api']))
-    formData.append('ingredients', JSON.stringify([
-      { name: 'Ингредиент 1', quantity: '100', unit: 'г' },
-      { name: 'Ингредиент 2', quantity: '200', unit: 'г' }
-    ]))
-    formData.append('steps', JSON.stringify([
-      { description: 'Шаг 1' },
-      { description: 'Шаг 2' }
-    ]))
+    formData.append('tags[]', '1') // ID тега из базы данных
+    formData.append('tags[]', '2') // ID тега из базы данных
+    formData.append('ingredients[0][name]', 'Ингредиент 1')
+    formData.append('ingredients[0][amount]', '100')
+    formData.append('ingredients[0][unit]', 'г')
+    formData.append('ingredients[1][name]', 'Ингредиент 2')
+    formData.append('ingredients[1][amount]', '200')
+    formData.append('ingredients[1][unit]', 'г')
+    formData.append('steps[0][description]', 'Шаг 1')
+    formData.append('steps[1][description]', 'Шаг 2')
 
     console.log('Начало запроса к API...')
-    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.recipes.create}`, {
-      method: 'POST',
-      body: formData,
+    const response = await $api.post(API_ENDPOINTS.recipes.create, formData, {
       headers: {
+        'Content-Type': 'multipart/form-data',
         'Accept': 'application/json'
       }
     })
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null)
-      throw new Error(errorData?.message || `Ошибка при создании рецепта: ${response.status}`)
-    }
-
-    const data = await response.json()
-    postResponse.value = data
+    console.log('Ответ от API:', response)
+    postResponse.value = response
   } catch (e: unknown) {
     console.error('Полная ошибка:', e)
     if (e instanceof Error) {
-      error.value = `Ошибка при создании рецепта: ${e.message}`
+      if ('response' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка при создании рецепта: ${axiosError.response?.data?.message || e.message}`
+        console.error('Детали ошибки:', {
+          status: axiosError.response?.status,
+          data: axiosError.response?.data,
+          headers: axiosError.response?.headers
+        })
+      } else if ('request' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка сети: ${e.message}`
+        console.error('Детали запроса:', {
+          request: axiosError.request,
+          config: axiosError.config
+        })
+      } else {
+        error.value = `Ошибка при создании рецепта: ${e.message}`
+      }
     } else {
       error.value = 'Произошла неизвестная ошибка при создании рецепта'
     }
