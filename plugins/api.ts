@@ -16,10 +16,9 @@ export default defineNuxtPlugin(() => {
 
     // Интерцептор для добавления initData
     api.interceptors.request.use((config) => {
-        // Отключаем добавление заголовка X-Telegram-Init-Data
-        // if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
-        //     config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData;
-        // }
+        if (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData) {
+            config.headers['X-Telegram-Init-Data'] = window.Telegram.WebApp.initData;
+        }
         return config;
     });
 
