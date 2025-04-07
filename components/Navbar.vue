@@ -6,6 +6,7 @@
         <div class="flex items-center">
           <!-- Мобильное меню -->
           <div class="flex-shrink-0 flex items-center lg:hidden">
+            <a href="/test-api">тест</a>
             <button 
               @click="isMobileMenuOpen = !isMobileMenuOpen" 
               class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
