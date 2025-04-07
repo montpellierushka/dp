@@ -116,10 +116,10 @@
                 />
               </div>
               <div>
-                <label :for="'ingredient-quantity-' + index" class="block text-sm font-medium text-gray-700 mb-1">Количество</label>
+                <label :for="'ingredient-amount-' + index" class="block text-sm font-medium text-gray-700 mb-1">Количество</label>
                 <input
-                  v-model="ingredient.quantity"
-                  :id="'ingredient-quantity-' + index"
+                  v-model="ingredient.amount"
+                  :id="'ingredient-amount-' + index"
                   type="text"
                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                   placeholder="Количество"
@@ -272,7 +272,7 @@ const form = ref({
   tags: [] as string[],
   ingredients: [] as Array<{
     name: string
-    quantity: string
+    amount: string
     unit: string
   }>,
   steps: [] as Array<{
@@ -296,7 +296,7 @@ const removeTag = (index: number) => {
 const addIngredient = () => {
   form.value.ingredients.push({
     name: '',
-    quantity: '',
+    amount: '',
     unit: ''
   })
 }
@@ -376,13 +376,20 @@ const handleSubmit = async () => {
 
     const response = await fetch(API_ENDPOINTS.recipes.create, {
       method: 'POST',
-      body: formData
+      body: formData,
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
     })
 
     if (!response.ok) {
-      throw new Error('Ошибка при создании рецепта')
+      const errorData = await response.json().catch(() => null)
+      throw new Error(errorData?.message || 'Ошибка при создании рецепта')
     }
 
+    const data = await response.json()
     showSuccess('Рецепт успешно создан')
     router.push('/recipes')
   } catch (error) {
