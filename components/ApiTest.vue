@@ -147,11 +147,11 @@ const testCreateRecipe = async () => {
     const formData = new FormData()
     formData.append('title', 'Тестовый рецепт')
     formData.append('description', 'Это тестовый рецепт для проверки API')
-    formData.append('country_id', '1') // ID страны из базы данных
+    formData.append('country_id', '1')
     formData.append('cooking_time', '30')
     formData.append('servings', '4')
-    formData.append('tags[]', '1') // ID тега из базы данных
-    formData.append('tags[]', '2') // ID тега из базы данных
+    formData.append('tags[]', '1')
+    formData.append('tags[]', '2')
     formData.append('ingredients[0][name]', 'Ингредиент 1')
     formData.append('ingredients[0][amount]', '100')
     formData.append('ingredients[0][unit]', 'г')
@@ -160,6 +160,17 @@ const testCreateRecipe = async () => {
     formData.append('ingredients[1][unit]', 'г')
     formData.append('steps[0][description]', 'Шаг 1')
     formData.append('steps[1][description]', 'Шаг 2')
+
+    // Отладочная информация
+    console.log('FormData содержимое:')
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`)
+    }
+
+    console.log('Заголовки запроса:', {
+      'Content-Type': 'multipart/form-data',
+      'Accept': 'application/json'
+    })
 
     console.log('Начало запроса к API...')
     const response = await $api.post(API_ENDPOINTS.recipes.create, formData, {
@@ -180,7 +191,8 @@ const testCreateRecipe = async () => {
         console.error('Детали ошибки:', {
           status: axiosError.response?.status,
           data: axiosError.response?.data,
-          headers: axiosError.response?.headers
+          headers: axiosError.response?.headers,
+          config: axiosError.config
         })
       } else if ('request' in e) {
         const axiosError = e as any
