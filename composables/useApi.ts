@@ -33,7 +33,7 @@ export const useApi = () => {
         }
     };
 
-    const post = async <T>(url: string, data?: Record<string, any>): Promise<T> => {
+    const post = async <T>(url: string, data?: Record<string, any> | FormData): Promise<T> => {
         loading.value = true;
         error.value = '';
         try {
@@ -51,7 +51,7 @@ export const useApi = () => {
         }
     };
 
-    const put = async <T>(url: string, data?: Record<string, any>): Promise<T> => {
+    const put = async <T>(url: string, data?: Record<string, any> | FormData): Promise<T> => {
         loading.value = true;
         error.value = '';
         try {

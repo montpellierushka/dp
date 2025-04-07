@@ -8,11 +8,31 @@ export interface Recipe {
     description: string
     image_url: string
     cooking_time: number
-    country: string
-    tags: string[]
+    servings: number
+    country: {
+        id: number
+        name: string
+        code: string
+        flag: string
+        description: string
+        created_at: string
+        updated_at: string
+    }
+    tags: Array<{
+        id: number
+        name: string
+        slug: string
+        description: string
+        created_at: string
+        updated_at: string
+        pivot: {
+            recipe_id: number
+            tag_id: number
+        }
+    }>
     ingredients: Array<{
         name: string
-        quantity: string
+        amount: string
         unit: string
     }>
     steps: Array<{
@@ -46,7 +66,7 @@ export interface RecipeFormData {
     tags: number[]
     ingredients: {
         name: string
-        quantity: string
+        amount: string
         unit: string
     }[]
     steps: {
@@ -65,11 +85,29 @@ export const useRecipes = () => {
 
     const loadRecipes = async (filters: RecipeFilters = {}) => {
         try {
-            const response = await api.get<Recipe[]>(API_ENDPOINTS.recipes.list, filters)
-            recipes.value = response
-            return response
+            const response = await api.get<{
+                current_page: number
+                data: Recipe[]
+                first_page_url: string
+                from: number
+                last_page: number
+                last_page_url: string
+                links: Array<{ url: string | null; label: string; active: boolean }>
+                next_page_url: string | null
+                path: string
+                per_page: number
+                prev_page_url: string | null
+                to: number
+                total: number
+            }>(API_ENDPOINTS.recipes.list, filters)
+            
+            if (!response?.data || !Array.isArray(response.data)) {
+                throw new Error('Неверный формат данных от API')
+            }
+            
+            recipes.value = response.data
+            return response.data
         } catch (e) {
-            console.error('Error loading recipes:', e)
             error.value = 'Ошибка при загрузке рецептов'
             throw e
         }
@@ -78,11 +116,16 @@ export const useRecipes = () => {
     const loadRecipe = async (id: number) => {
         try {
             const response = await api.get<Recipe>(API_ENDPOINTS.recipes.get(id))
+            
+            if (!response) {
+                throw new Error('Неверный формат данных от API')
+            }
+            
             recipe.value = response
             return response
-        } catch (e) {
-            console.error('Error loading recipe:', e)
-            throw e
+        } catch (error) {
+            console.error('Ошибка при загрузке рецепта:', error)
+            throw error
         }
     }
 
@@ -92,7 +135,6 @@ export const useRecipes = () => {
             recipes.value.push(response)
             return response
         } catch (e) {
-            console.error('Error creating recipe:', e)
             error.value = 'Ошибка при создании рецепта'
             throw e
         }
@@ -103,7 +145,6 @@ export const useRecipes = () => {
             const response = await api.put<Recipe>(API_ENDPOINTS.recipes.update(id), data)
             return response
         } catch (e) {
-            console.error('Error updating recipe:', e)
             throw e
         }
     }
@@ -112,7 +153,6 @@ export const useRecipes = () => {
         try {
             await api.del(API_ENDPOINTS.recipes.delete(id))
         } catch (e) {
-            console.error('Error deleting recipe:', e)
             throw e
         }
     }
@@ -122,7 +162,6 @@ export const useRecipes = () => {
             const response = await api.post<Recipe>(API_ENDPOINTS.favorites.add(id))
             return response
         } catch (e) {
-            console.error('Error toggling favorite:', e)
             throw e
         }
     }
@@ -132,7 +171,6 @@ export const useRecipes = () => {
             const response = await api.get<Recipe[]>(API_ENDPOINTS.favorites.list)
             recipes.value = response
         } catch (e) {
-            console.error('Error loading favorites:', e)
             error.value = 'Ошибка при загрузке избранного'
         }
     }
@@ -142,7 +180,6 @@ export const useRecipes = () => {
             const response = await api.get<Recipe[]>(API_ENDPOINTS.user.recipes)
             recipes.value = response
         } catch (e) {
-            console.error('Error loading my recipes:', e)
             error.value = 'Ошибка при загрузке моих рецептов'
         }
     }

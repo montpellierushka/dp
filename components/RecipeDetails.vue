@@ -15,7 +15,7 @@
                     <h2 class="card-title">{{ recipe.title }}</h2>
                     <p class="text-lg">{{ recipe.description }}</p>
                     <div class="flex gap-2 mt-4">
-                        <span class="badge badge-primary">{{ recipe.country }}</span>
+                        <span class="badge badge-primary">{{ recipe.country?.name || 'Не указана' }}</span>
                         <span class="badge badge-secondary">{{ recipe.cooking_time }} мин</span>
                     </div>
                     <div class="card-actions justify-between items-center mt-4">
@@ -42,7 +42,7 @@
                         <div class="space-y-2">
                             <div v-for="(ingredient, index) in recipe.ingredients" :key="index" class="flex justify-between">
                                 <span>{{ ingredient.name }}</span>
-                                <span>{{ ingredient.quantity }} {{ ingredient.unit }}</span>
+                                <span>{{ ingredient.amount }} {{ ingredient.unit }}</span>
                             </div>
                         </div>
                     </div>
@@ -70,8 +70,8 @@
                 <div class="card-body">
                     <h3 class="card-title">Теги</h3>
                     <div class="flex flex-wrap gap-2">
-                        <span v-for="tag in recipe.tags" :key="tag" class="badge badge-outline">
-                            {{ tag }}
+                        <span v-for="tag in recipe.tags" :key="tag.id" class="badge badge-outline">
+                            {{ tag.name }}
                         </span>
                     </div>
                 </div>

@@ -1,24 +1,52 @@
 export interface Ingredient {
+  id: number;
   name: string;
-  amount: string;
+  amount: number;
+  unit: string;
+  notes?: string;
+}
+
+export interface RecipeStep {
+  id: number;
+  step_number: number;
+  description: string;
+  image?: string;
+}
+
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface Country {
+  id: number;
+  name: string;
+  flag?: string;
 }
 
 export interface Recipe {
   id: number;
   title: string;
   description: string;
-  image_url?: string;
-  country: string;
-  cookingTime: number;
+  cooking_time: number;
   servings: number;
-  ingredients: Ingredient[];
-  instructions: string[];
-  tags: string[];
-  is_liked?: boolean;
+  image?: string;
+  country_id: number;
+  user_id: number;
+  created_at: string;
+  updated_at: string;
+  country?: Country;
+  tags?: Tag[];
+  ingredients?: Ingredient[];
+  steps?: RecipeStep[];
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  favorites_count?: number;
   is_favorite?: boolean;
-  rating?: number;
-  reviews?: Review[];
-  imageUrl?: string;
 }
 
 export interface RecipeForm {
@@ -27,7 +55,10 @@ export interface RecipeForm {
   country: string;
   cookingTime: number;
   servings: number;
-  ingredients: Ingredient[];
+  ingredients: {
+    name: string;
+    amount: string;
+  }[];
   instructions: string[];
   tags: string[];
 } 

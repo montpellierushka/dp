@@ -118,7 +118,7 @@
                             required
                         />
                         <input
-                            v-model="ingredient.quantity"
+                            v-model="ingredient.amount"
                             type="text"
                             placeholder="Количество"
                             class="input input-bordered w-32"
@@ -223,6 +223,7 @@ import { useNotifications } from '~/composables/useNotifications'
 import { useCountries } from '~/composables/useCountries'
 import { useTags } from '~/composables/useTags'
 import type { RecipeFormData } from '~/composables/useRecipes'
+import type { Tag } from '~/composables/useTags'
 
 const router = useRouter()
 const { createRecipe, updateRecipe, loadRecipe } = useRecipes()
@@ -275,7 +276,7 @@ const handleStepImageChange = (event: Event, index: number): void => {
 const addIngredient = (): void => {
     form.value.ingredients.push({
         name: '',
-        quantity: '',
+        amount: '',
         unit: ''
     })
 }
@@ -298,16 +299,26 @@ const submitForm = async (): Promise<void> => {
     submitting.value = true
     try {
         const formData = new FormData()
+        
+        // Добавляем текстовые поля
         formData.append('title', form.value.title)
         formData.append('description', form.value.description)
         formData.append('country_id', form.value.country_id.toString())
         formData.append('cooking_time', form.value.cooking_time.toString())
+        
+        // Добавляем массивы и объекты как JSON
         formData.append('tags', JSON.stringify(form.value.tags))
         formData.append('ingredients', JSON.stringify(form.value.ingredients))
-        formData.append('steps', JSON.stringify(form.value.steps))
+        formData.append('steps', JSON.stringify(form.value.steps.map(step => ({
+            description: step.description
+        }))))
+        
+        // Добавляем файлы
         if (form.value.image) {
             formData.append('image', form.value.image)
         }
+        
+        // Добавляем изображения для шагов
         form.value.steps.forEach((step, index) => {
             if (step.image) {
                 formData.append(`step_images[${index}]`, step.image)
@@ -336,11 +347,8 @@ onMounted(async () => {
     if (props.isEdit && props.recipeId) {
         const recipe = await loadRecipe(props.recipeId)
         if (recipe) {
-            const country = countriesList.value.find(c => c.name === recipe.country)
-            const tagIds = recipe.tags.map(tagName => {
-                const tag = tagsList.value.find(t => t.name === tagName)
-                return tag?.id || 0
-            }).filter(id => id !== 0)
+            const country = countriesList.value.find(c => c.id === recipe.country.id)
+            const tagIds = recipe.tags.map((tag: Tag) => tag.id)
 
             form.value = {
                 title: recipe.title,
@@ -349,7 +357,7 @@ onMounted(async () => {
                 cooking_time: recipe.cooking_time,
                 tags: tagIds,
                 ingredients: recipe.ingredients,
-                steps: recipe.steps.map(step => ({
+                steps: recipe.steps.map((step: { description: string }) => ({
                     description: step.description,
                     image: undefined
                 }))

@@ -70,7 +70,7 @@
                 <span class="label-text">Страна</span>
               </label>
               <select
-                v-model="form.country"
+                v-model="form.country_id"
                 class="select select-bordered w-full"
                 required
               >
@@ -78,7 +78,7 @@
                 <option
                   v-for="country in countriesList"
                   :key="country.id"
-                  :value="country.name"
+                  :value="country.id"
                 >
                   {{ country.name }}
                 </option>
@@ -111,7 +111,7 @@
                   <label class="label cursor-pointer gap-2">
                     <input
                       type="checkbox"
-                      :value="tag.name"
+                      :value="tag.id"
                       v-model="form.tags"
                       class="checkbox"
                     />
@@ -157,7 +157,7 @@
                   required
                 />
                 <input
-                  v-model="ingredient.quantity"
+                  v-model="ingredient.amount"
                   type="text"
                   placeholder="Количество"
                   class="input input-bordered w-32"
@@ -245,7 +245,7 @@ import { useRecipes } from '~/composables/useRecipes'
 import { useNotifications } from '~/composables/useNotifications'
 import { useCountries } from '~/composables/useCountries'
 import { useTags } from '~/composables/useTags'
-import type { Recipe } from '~/composables/useRecipes'
+import type { Recipe, RecipeFormData } from '~/composables/useRecipes'
 import EmptyState from '~/components/EmptyState.vue'
 import PageHeader from '~/components/PageHeader.vue'
 import Navbar from '~/components/Navbar.vue'
@@ -257,19 +257,8 @@ interface Step {
 
 interface Ingredient {
     name: string
-    quantity: string
+    amount: string
     unit: string
-}
-
-interface FormData {
-    title: string
-    description: string
-    country: string
-    cooking_time: number
-    tags: string[]
-    ingredients: Ingredient[]
-    steps: Step[]
-    image?: File
 }
 
 const route = useRoute()
@@ -280,20 +269,22 @@ const { countries: countriesList, loadCountries } = useCountries()
 const { tags: tagsList, loadTags } = useTags()
 
 const recipe = ref<Recipe | null>(null)
-const form = ref<FormData>({
+const form = ref<RecipeFormData>({
     title: '',
     description: '',
-    country: '',
+    country_id: 0,
     cooking_time: 0,
     tags: [],
     ingredients: [],
-    steps: []
+    steps: [],
+    image: undefined
 })
 const loading = ref(false)
 const submitting = ref(false)
 const error = ref<string | null>(null)
 
-const getImageUrl = (file: File | string): string => {
+const getImageUrl = (file: File | string | undefined): string => {
+    if (!file) return '/images/placeholder.jpg'
     if (typeof file === 'string') {
         return file
     }
@@ -310,6 +301,9 @@ const handleImageChange = (event: Event): void => {
 const handleStepImageChange = (event: Event, index: number): void => {
     const input = event.target as HTMLInputElement
     if (input.files && input.files[0]) {
+        if (!form.value.steps[index]) {
+            form.value.steps[index] = { description: '' }
+        }
         form.value.steps[index].image = input.files[0]
     }
 }
@@ -317,7 +311,7 @@ const handleStepImageChange = (event: Event, index: number): void => {
 const addIngredient = (): void => {
     form.value.ingredients.push({
         name: '',
-        quantity: '',
+        amount: '',
         unit: ''
     })
 }
@@ -336,31 +330,29 @@ const removeStep = (index: number): void => {
     form.value.steps.splice(index, 1)
 }
 
-const submitForm = async (): Promise<void> => {
+const submitForm = async () => {
+    if (!recipe.value) return
     submitting.value = true
+    error.value = ''
+
     try {
         const formData = new FormData()
         formData.append('title', form.value.title)
         formData.append('description', form.value.description)
-        formData.append('country', form.value.country)
+        formData.append('country_id', form.value.country_id.toString())
         formData.append('cooking_time', form.value.cooking_time.toString())
         formData.append('tags', JSON.stringify(form.value.tags))
         formData.append('ingredients', JSON.stringify(form.value.ingredients))
         formData.append('steps', JSON.stringify(form.value.steps))
+
         if (form.value.image) {
             formData.append('image', form.value.image)
         }
-        form.value.steps.forEach((step, index) => {
-            if (step.image) {
-                formData.append(`step_images[${index}]`, step.image)
-            }
-        })
 
-        await updateRecipe(Number(route.params.id), formData)
-        showSuccess('Рецепт успешно обновлен')
-        router.push(`/recipes/${route.params.id}`)
+        await updateRecipe(recipe.value.id, formData)
+        router.push(`/recipes/${recipe.value.id}`)
     } catch (e) {
-        showError('Произошла ошибка при обновлении рецепта')
+        error.value = 'Ошибка при сохранении рецепта'
         console.error('Error updating recipe:', e)
     } finally {
         submitting.value = false
@@ -376,17 +368,22 @@ onMounted(async () => {
             throw new Error('Рецепт не найден')
         }
         recipe.value = loadedRecipe
+        
+        // Находим ID страны по имени
+        const country = countriesList.value.find(c => c.name === loadedRecipe.country.name)
+        
         form.value = {
             title: loadedRecipe.title,
             description: loadedRecipe.description,
-            country: loadedRecipe.country,
+            country_id: country?.id || 0,
             cooking_time: loadedRecipe.cooking_time,
-            tags: loadedRecipe.tags,
+            tags: loadedRecipe.tags.map(tag => tag.id),
             ingredients: loadedRecipe.ingredients,
             steps: loadedRecipe.steps.map(step => ({
                 description: step.description,
                 image: undefined
-            }))
+            })),
+            image: undefined
         }
         await Promise.all([loadCountries(), loadTags()])
     } catch (e) {

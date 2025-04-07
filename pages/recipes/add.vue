@@ -188,7 +188,7 @@ import { useNuxtApp } from '#app'
 import { useRouter } from 'vue-router'
 import PageContainer from '~/components/PageContainer.vue'
 import PageTitle from '~/components/PageTitle.vue'
-import type { RecipeForm, Ingredient } from '~/types/recipe'
+import type { RecipeForm } from '~/types/recipe'
 
 const { $api } = useNuxtApp()
 const router = useRouter()
