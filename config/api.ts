@@ -1,4 +1,4 @@
-export const API_BASE_URL = process.env.NUXT_PUBLIC_API_URL || 'https://montpellierushka-backend-7c0b.twc1.net/'
+export const API_BASE_URL = process.env.NUXT_PUBLIC_API_URL || 'https://montpellierushka-backend-7c0b.twc1.net'
 
 export const API_ENDPOINTS = {
   recipes: {

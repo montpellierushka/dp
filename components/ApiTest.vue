@@ -91,7 +91,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useNuxtApp } from '#app'
-import { API_ENDPOINTS } from '~/config/api'
+import { API_ENDPOINTS, API_BASE_URL } from '~/config/api'
 
 const { $api } = useNuxtApp()
 const getResponse = ref<any>(null)
@@ -149,6 +149,7 @@ const testCreateRecipe = async () => {
     formData.append('description', 'Это тестовый рецепт для проверки API')
     formData.append('country', 'Россия')
     formData.append('cooking_time', '30')
+    formData.append('servings', '4')
     formData.append('tags', JSON.stringify(['тест', 'api']))
     formData.append('ingredients', JSON.stringify([
       { name: 'Ингредиент 1', quantity: '100', unit: 'г' },
@@ -159,26 +160,32 @@ const testCreateRecipe = async () => {
       { description: 'Шаг 2' }
     ]))
 
-    const response = await fetch(API_ENDPOINTS.recipes.create, {
-      method: 'POST',
-      body: formData,
-      credentials: 'include',
+    const response = await $api.post(API_ENDPOINTS.recipes.create, formData, {
       headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
+        'Content-Type': 'multipart/form-data'
       }
     })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null)
-      throw new Error(errorData?.message || 'Ошибка при создании рецепта')
-    }
-
-    const data = await response.json()
-    postResponse.value = data
+    postResponse.value = response
   } catch (e: unknown) {
     if (e instanceof Error) {
-      error.value = `Ошибка при создании рецепта: ${e.message}`
+      if ('response' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка при создании рецепта: ${axiosError.response?.data?.message || e.message}`
+        console.error('Детали ошибки:', {
+          status: axiosError.response?.status,
+          data: axiosError.response?.data,
+          headers: axiosError.response?.headers
+        })
+      } else if ('request' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка сети: ${e.message}`
+        console.error('Детали запроса:', {
+          request: axiosError.request,
+          config: axiosError.config
+        })
+      } else {
+        error.value = `Ошибка при создании рецепта: ${e.message}`
+      }
     } else {
       error.value = 'Произошла неизвестная ошибка при создании рецепта'
     }
@@ -198,25 +205,28 @@ const testDeleteRecipe = async () => {
     isLoading.value = true
     error.value = ''
     
-    const response = await fetch(API_ENDPOINTS.recipes.delete(Number(recipeIdToDelete.value)), {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null)
-      throw new Error(errorData?.message || 'Ошибка при удалении рецепта')
-    }
-
-    const data = await response.json().catch(() => ({ success: true }))
-    deleteResponse.value = data
+    const response = await $api.delete(API_ENDPOINTS.recipes.delete(Number(recipeIdToDelete.value)))
+    deleteResponse.value = response
   } catch (e: unknown) {
     if (e instanceof Error) {
-      error.value = `Ошибка при удалении рецепта: ${e.message}`
+      if ('response' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка при удалении рецепта: ${axiosError.response?.data?.message || e.message}`
+        console.error('Детали ошибки:', {
+          status: axiosError.response?.status,
+          data: axiosError.response?.data,
+          headers: axiosError.response?.headers
+        })
+      } else if ('request' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка сети: ${e.message}`
+        console.error('Детали запроса:', {
+          request: axiosError.request,
+          config: axiosError.config
+        })
+      } else {
+        error.value = `Ошибка при удалении рецепта: ${e.message}`
+      }
     } else {
       error.value = 'Произошла неизвестная ошибка при удалении рецепта'
     }
@@ -231,32 +241,35 @@ const testCors = async () => {
     isLoading.value = true
     error.value = ''
     
-    const response = await fetch(API_ENDPOINTS.recipes.list, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null)
-      throw new Error(errorData?.message || 'Ошибка при тестировании CORS')
-    }
-
-    const data = await response.json()
+    const response = await $api.get('/api/health')
     corsResponse.value = {
       status: response.status,
       statusText: response.statusText,
-      headers: Object.fromEntries([...response.headers.entries()]),
-      data
+      headers: response.headers,
+      data: response.data
     }
   } catch (e: unknown) {
     if (e instanceof Error) {
-      error.value = `Ошибка при тестировании CORS: ${e.message}`
+      if ('response' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка при проверке CORS: ${axiosError.response?.data?.message || e.message}`
+        console.error('Детали ошибки:', {
+          status: axiosError.response?.status,
+          data: axiosError.response?.data,
+          headers: axiosError.response?.headers
+        })
+      } else if ('request' in e) {
+        const axiosError = e as any
+        error.value = `Ошибка сети: ${e.message}`
+        console.error('Детали запроса:', {
+          request: axiosError.request,
+          config: axiosError.config
+        })
+      } else {
+        error.value = `Ошибка при проверке CORS: ${e.message}`
+      }
     } else {
-      error.value = 'Произошла неизвестная ошибка при тестировании CORS'
+      error.value = 'Произошла неизвестная ошибка при проверке CORS'
     }
     console.error(e)
   } finally {
