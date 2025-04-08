@@ -74,6 +74,21 @@
 
                 <div class="form-control">
                     <label class="label">
+                        <span class="label-text">Сложность</span>
+                    </label>
+                    <select
+                        v-model="form.difficulty"
+                        class="select select-bordered w-full"
+                        required
+                    >
+                        <option value="easy">Легко</option>
+                        <option value="medium">Средне</option>
+                        <option value="hard">Сложно</option>
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="label">
                         <span class="label-text">Теги</span>
                     </label>
                     <div class="flex flex-wrap gap-2">
@@ -260,6 +275,7 @@ const form = ref<RecipeFormData>({
     country_id: 0,
     cooking_time: 0,
     servings: 1,
+    difficulty: 'medium',
     tags: [],
     ingredients: [],
     steps: [],
@@ -320,6 +336,7 @@ const submitForm = async (): Promise<void> => {
         formData.append('country_id', form.value.country_id.toString())
         formData.append('cooking_time', form.value.cooking_time.toString())
         formData.append('servings', form.value.servings.toString())
+        formData.append('difficulty', form.value.difficulty)
         
         // Добавляем массивы и объекты как JSON
         formData.append('tags', JSON.stringify(form.value.tags))
@@ -371,6 +388,7 @@ onMounted(async () => {
                 country_id: country?.id || 0,
                 cooking_time: recipe.cooking_time,
                 servings: recipe.servings,
+                difficulty: recipe.difficulty || 'medium',
                 tags: tagIds,
                 ingredients: recipe.ingredients,
                 steps: recipe.steps.map((step: { description: string }) => ({

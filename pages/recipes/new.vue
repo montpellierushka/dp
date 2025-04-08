@@ -77,6 +77,23 @@
               </div>
             </div>
 
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-1">Сложность</label>
+                <select
+                  v-model="form.difficulty"
+                  id="difficulty"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  required
+                >
+                  <option value="">Выберите сложность</option>
+                  <option value="easy">Легко</option>
+                  <option value="medium">Средне</option>
+                  <option value="hard">Сложно</option>
+                </select>
+              </div>
+            </div>
+
             <!-- Теги -->
             <div class="space-y-4">
               <h2 class="text-xl font-semibold text-gray-800">Теги</h2>
@@ -280,6 +297,7 @@ const form = ref<RecipeFormData>({
   country_id: 0,
   cooking_time: 30,
   servings: 4,
+  difficulty: 'medium',
   tags: [],
   ingredients: [],
   steps: [],
@@ -360,6 +378,7 @@ const handleSubmit = async () => {
     formData.append('country_id', form.value.country_id.toString())
     formData.append('cooking_time', form.value.cooking_time.toString())
     formData.append('servings', form.value.servings.toString())
+    formData.append('difficulty', form.value.difficulty)
     formData.append('tags', JSON.stringify(form.value.tags))
     formData.append('ingredients', JSON.stringify(form.value.ingredients))
     formData.append('steps', JSON.stringify(form.value.steps.map(step => ({

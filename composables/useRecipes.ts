@@ -9,6 +9,7 @@ export interface Recipe {
     image_url: string
     cooking_time: number
     servings: number
+    difficulty: 'easy' | 'medium' | 'hard'
     country: {
         id: number
         name: string
@@ -64,6 +65,7 @@ export interface RecipeFormData {
     country_id: number
     cooking_time: number
     servings: number
+    difficulty: 'easy' | 'medium' | 'hard'
     tags: number[]
     ingredients: {
         name: string

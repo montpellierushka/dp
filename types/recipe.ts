@@ -31,6 +31,7 @@ export interface Recipe {
   description: string;
   cooking_time: number;
   servings: number;
+  difficulty: 'easy' | 'medium' | 'hard';
   image?: string;
   country_id: number;
   user_id: number;
