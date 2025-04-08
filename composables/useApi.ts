@@ -21,8 +21,7 @@ export const useApi = () => {
         error.value = '';
         try {
             const response = await $fetch<ApiResponse<T>>(`${baseURL}${url}`, {
-                params,
-                credentials: 'include'
+                params
             });
             return response.data;
         } catch (e) {
@@ -40,8 +39,7 @@ export const useApi = () => {
         try {
             const response = await $fetch<ApiResponse<T>>(`${baseURL}${url}`, {
                 method: 'POST',
-                body: data,
-                credentials: 'include'
+                body: data
             });
             return response.data;
         } catch (e) {
@@ -59,8 +57,7 @@ export const useApi = () => {
         try {
             const response = await $fetch<ApiResponse<T>>(`${baseURL}${url}`, {
                 method: 'PUT',
-                body: data,
-                credentials: 'include'
+                body: data
             });
             return response.data;
         } catch (e) {
@@ -77,8 +74,7 @@ export const useApi = () => {
         error.value = '';
         try {
             const response = await $fetch<ApiResponse<T>>(`${baseURL}${url}`, {
-                method: 'DELETE',
-                credentials: 'include'
+                method: 'DELETE'
             });
             return response.data;
         } catch (e) {
