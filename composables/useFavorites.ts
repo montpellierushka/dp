@@ -23,7 +23,7 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            const response = await $api.favoriteApi.getFavorites()
+            const response = await $api.get('/api/favorites')
             if (response?.data?.data?.recipes?.data) {
                 favorites.value = response.data.data.recipes.data || []
             }
@@ -40,7 +40,7 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            await $api.favoriteApi.addRecipe(recipeId)
+            await $api.post(`/api/favorites/recipes/${recipeId}`)
             
             // Обновляем список избранного
             await loadFavorites()
@@ -59,7 +59,7 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            await $api.favoriteApi.removeRecipe(recipeId)
+            await $api.delete(`/api/favorites/recipes/${recipeId}`)
             
             // Обновляем список избранного
             await loadFavorites()
