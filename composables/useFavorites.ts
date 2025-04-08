@@ -7,7 +7,9 @@ interface ApiResponse {
     status: string;
     message?: string;
     data?: {
-        recipes?: Recipe[];
+        recipes?: {
+            data: Recipe[];
+        };
         routes?: any[];
     };
 }
@@ -21,9 +23,11 @@ export const useFavorites = () => {
     const loadFavorites = async () => {
         try {
             loading.value = true
-            const response = await api.get<ApiResponse>(API_ENDPOINTS.favorites.list)
-            if (response?.data?.recipes) {
-                favorites.value = response.data.recipes
+            error.value = ''
+            
+            const response = await $fetch<ApiResponse>(API_ENDPOINTS.favorites.list)
+            if (response?.data?.recipes?.data) {
+                favorites.value = response.data.recipes.data || []
             }
         } catch (e) {
             console.error('Error loading favorites:', e)
@@ -35,27 +39,43 @@ export const useFavorites = () => {
 
     const addToFavorites = async (recipeId: number) => {
         try {
-            const response = await api.post<ApiResponse>(API_ENDPOINTS.favorites.add(recipeId))
-            if (response?.status === 'success') {
-                return true
-            }
-            return false
+            loading.value = true
+            error.value = ''
+            
+            await $fetch(API_ENDPOINTS.favorites.add(recipeId), {
+                method: 'POST'
+            })
+            
+            // Обновляем список избранного
+            await loadFavorites()
+            return true
         } catch (e) {
             console.error('Error adding to favorites:', e)
-            throw e
+            error.value = 'Ошибка при добавлении в избранное'
+            return false
+        } finally {
+            loading.value = false
         }
     }
 
     const removeFromFavorites = async (recipeId: number) => {
         try {
-            const response = await api.del<ApiResponse>(API_ENDPOINTS.favorites.remove(recipeId))
-            if (response?.status === 'success') {
-                return true
-            }
-            return false
+            loading.value = true
+            error.value = ''
+            
+            await $fetch(API_ENDPOINTS.favorites.remove(recipeId), {
+                method: 'DELETE'
+            })
+            
+            // Обновляем список избранного
+            await loadFavorites()
+            return true
         } catch (e) {
             console.error('Error removing from favorites:', e)
-            throw e
+            error.value = 'Ошибка при удалении из избранного'
+            return false
+        } finally {
+            loading.value = false
         }
     }
 
