@@ -1,7 +1,5 @@
 import { ref } from 'vue'
-import { useApi } from './useApi'
 import type { Recipe } from './useRecipes'
-import { API_ENDPOINTS } from '~/config/api'
 
 interface ApiResponse {
     status: string;
@@ -15,7 +13,7 @@ interface ApiResponse {
 }
 
 export const useFavorites = () => {
-    const api = useApi()
+    const { $api } = useNuxtApp()
     const favorites = ref<Recipe[]>([])
     const loading = ref(false)
     const error = ref('')
@@ -25,9 +23,9 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            const response = await $fetch<ApiResponse>(API_ENDPOINTS.favorites.list)
-            if (response?.data?.recipes?.data) {
-                favorites.value = response.data.recipes.data || []
+            const response = await $api.favoriteApi.getFavorites()
+            if (response?.data?.data?.recipes?.data) {
+                favorites.value = response.data.data.recipes.data || []
             }
         } catch (e) {
             console.error('Error loading favorites:', e)
@@ -42,9 +40,7 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            await $fetch(API_ENDPOINTS.favorites.add(recipeId), {
-                method: 'POST'
-            })
+            await $api.favoriteApi.addRecipe(recipeId)
             
             // Обновляем список избранного
             await loadFavorites()
@@ -63,9 +59,7 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            await $fetch(API_ENDPOINTS.favorites.remove(recipeId), {
-                method: 'DELETE'
-            })
+            await $api.favoriteApi.removeRecipe(recipeId)
             
             // Обновляем список избранного
             await loadFavorites()
