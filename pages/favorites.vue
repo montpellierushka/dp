@@ -75,8 +75,8 @@ const deleteRecipe = async (id: number) => {
 const handleToggleFavorite = async (recipe: Recipe) => {
   try {
     await toggleFavorite(recipe.id)
+    recipes.value = recipes.value.filter(r => r.id !== recipe.id)
     showSuccess('Рецепт успешно удален из избранного')
-    await loadFavorites()
   } catch (e) {
     showError('Произошла ошибка при удалении рецепта из избранного')
     console.error('Error toggling favorite:', e)
