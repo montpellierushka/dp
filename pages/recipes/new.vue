@@ -36,7 +36,7 @@
             </div>
 
             <!-- Страна и время -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
                 <label for="country" class="block text-sm font-medium text-gray-700 mb-1">Страна</label>
                 <select
@@ -59,6 +59,18 @@
                   id="cooking_time"
                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                   placeholder="Время в минутах"
+                  required
+                  min="1"
+                />
+              </div>
+              <div>
+                <label for="servings" class="block text-sm font-medium text-gray-700 mb-1">Количество порций</label>
+                <input
+                  v-model.number="form.servings"
+                  type="number"
+                  id="servings"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                  placeholder="Количество порций"
                   required
                   min="1"
                 />
@@ -267,6 +279,7 @@ const form = ref<RecipeFormData>({
   description: '',
   country_id: 0,
   cooking_time: 30,
+  servings: 4,
   tags: [],
   ingredients: [],
   steps: [],
@@ -338,8 +351,6 @@ const removeStepImage = (index: number) => {
 }
 
 const handleSubmit = async () => {
-
-
   try {
     isLoading.value = true
 
@@ -348,6 +359,7 @@ const handleSubmit = async () => {
     formData.append('description', form.value.description)
     formData.append('country_id', form.value.country_id.toString())
     formData.append('cooking_time', form.value.cooking_time.toString())
+    formData.append('servings', form.value.servings.toString())
     formData.append('tags', JSON.stringify(form.value.tags))
     formData.append('ingredients', JSON.stringify(form.value.ingredients))
     formData.append('steps', JSON.stringify(form.value.steps.map(step => ({

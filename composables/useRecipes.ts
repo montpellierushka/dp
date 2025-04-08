@@ -63,6 +63,7 @@ export interface RecipeFormData {
     description: string
     country_id: number
     cooking_time: number
+    servings: number
     tags: number[]
     ingredients: {
         name: string

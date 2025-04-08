@@ -274,6 +274,7 @@ const form = ref<RecipeFormData>({
     description: '',
     country_id: 0,
     cooking_time: 0,
+    servings: 4,
     tags: [],
     ingredients: [],
     steps: [],
@@ -341,6 +342,7 @@ const submitForm = async () => {
         formData.append('description', form.value.description)
         formData.append('country_id', form.value.country_id.toString())
         formData.append('cooking_time', form.value.cooking_time.toString())
+        formData.append('servings', form.value.servings.toString())
         formData.append('tags', JSON.stringify(form.value.tags))
         formData.append('ingredients', JSON.stringify(form.value.ingredients))
         formData.append('steps', JSON.stringify(form.value.steps))
@@ -377,6 +379,7 @@ onMounted(async () => {
             description: loadedRecipe.description,
             country_id: country?.id || 0,
             cooking_time: loadedRecipe.cooking_time,
+            servings: loadedRecipe.servings,
             tags: loadedRecipe.tags.map(tag => tag.id),
             ingredients: loadedRecipe.ingredients,
             steps: loadedRecipe.steps.map(step => ({
