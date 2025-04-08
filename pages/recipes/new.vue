@@ -39,54 +39,45 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label for="country" class="block text-sm font-medium text-gray-700 mb-1">Страна</label>
-                <input
-                  v-model="form.country"
-                  type="text"
+                <select
+                  v-model="form.country_id"
                   id="country"
                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                  placeholder="Страна происхождения"
                   required
-                />
+                >
+                  <option value="">Выберите страну</option>
+                  <option v-for="country in countries" :key="country.id" :value="country.id">
+                    {{ country.name }}
+                  </option>
+                </select>
               </div>
               <div>
                 <label for="cooking_time" class="block text-sm font-medium text-gray-700 mb-1">Время приготовления (мин)</label>
                 <input
-                  v-model="form.cooking_time"
+                  v-model.number="form.cooking_time"
                   type="number"
                   id="cooking_time"
                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                   placeholder="Время в минутах"
                   required
+                  min="1"
                 />
               </div>
             </div>
 
             <!-- Теги -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Теги</label>
+            <div class="space-y-4">
+              <h2 class="text-xl font-semibold text-gray-800">Теги</h2>
               <div class="flex flex-wrap gap-2">
-                <div v-for="(tag, index) in form.tags" :key="index" class="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                  <span>{{ tag }}</span>
-                  <button @click="removeTag(index)" class="text-blue-500 hover:text-blue-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <div class="flex items-center gap-2">
-                  <input
-                    v-model="newTag"
-                    type="text"
-                    class="px-3 py-1 border border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                    placeholder="Добавить тег"
-                    @keydown.enter.prevent="addTag"
-                  />
-                  <button @click="addTag" class="text-blue-600 hover:text-blue-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                  </button>
-                </div>
+                <span 
+                  v-for="tag in tags" 
+                  :key="tag.id"
+                  class="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full cursor-pointer hover:bg-gray-200"
+                  :class="{ 'bg-blue-500 text-white': form.tags.includes(tag.id) }"
+                  @click="toggleTag(tag.id)"
+                >
+                  {{ tag.name }}
+                </span>
               </div>
             </div>
           </div>
@@ -251,46 +242,48 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useRecipes } from '~/composables/useRecipes'
 import { useAuth } from '~/composables/useAuth'
 import { useNotifications } from '~/composables/useNotifications'
-import { useRouter } from 'vue-router'
-import { API_ENDPOINTS } from '~/config/api'
+import { useCountries } from '~/composables/useCountries'
+import { useTags } from '~/composables/useTags'
+import type { RecipeFormData } from '~/composables/useRecipes'
 
-const { user } = useAuth()
-const { showSuccess, showError } = useNotifications()
 const router = useRouter()
+const { user } = useAuth()
+const { createRecipe } = useRecipes()
+const { showSuccess, showError } = useNotifications()
+const { countries, loadCountries } = useCountries()
+const { tags, loadTags } = useTags()
 
 const isLoading = ref(false)
 const newTag = ref('')
 const imageUrls = ref<string[]>([])
 
-const form = ref({
+const form = ref<RecipeFormData>({
   title: '',
   description: '',
-  country: '',
-  cooking_time: '',
-  tags: [] as string[],
-  ingredients: [] as Array<{
-    name: string
-    amount: string
-    unit: string
-  }>,
-  steps: [] as Array<{
-    description: string
-    image: File | null
-  }>,
-  image: null as File | null
+  country_id: 0,
+  cooking_time: 30,
+  tags: [],
+  ingredients: [],
+  steps: [],
+  image: undefined
 })
 
-const addTag = () => {
-  if (newTag.value.trim() && !form.value.tags.includes(newTag.value.trim())) {
-    form.value.tags.push(newTag.value.trim())
-    newTag.value = ''
-  }
-}
+onMounted(async () => {
+  await Promise.all([loadCountries(), loadTags()])
+})
 
-const removeTag = (index: number) => {
-  form.value.tags.splice(index, 1)
+const toggleTag = (tagId: number) => {
+  const index = form.value.tags.indexOf(tagId)
+  if (index === -1) {
+    form.value.tags.push(tagId)
+  } else {
+    form.value.tags.splice(index, 1)
+  }
 }
 
 const addIngredient = () => {
@@ -308,7 +301,7 @@ const removeIngredient = (index: number) => {
 const addStep = () => {
   form.value.steps.push({
     description: '',
-    image: null
+    image: undefined
   })
 }
 
@@ -330,7 +323,7 @@ const handleMainImageChange = (e: Event) => {
 }
 
 const removeMainImage = () => {
-  form.value.image = null
+  form.value.image = undefined
 }
 
 const handleStepImageChange = (e: Event, index: number) => {
@@ -341,14 +334,11 @@ const handleStepImageChange = (e: Event, index: number) => {
 }
 
 const removeStepImage = (index: number) => {
-  form.value.steps[index].image = null
+  form.value.steps[index].image = undefined
 }
 
 const handleSubmit = async () => {
-  if (!user.value) {
-    showError('Для создания рецепта необходимо авторизоваться')
-    return
-  }
+
 
   try {
     isLoading.value = true
@@ -356,8 +346,8 @@ const handleSubmit = async () => {
     const formData = new FormData()
     formData.append('title', form.value.title)
     formData.append('description', form.value.description)
-    formData.append('country', form.value.country)
-    formData.append('cooking_time', form.value.cooking_time)
+    formData.append('country_id', form.value.country_id.toString())
+    formData.append('cooking_time', form.value.cooking_time.toString())
     formData.append('tags', JSON.stringify(form.value.tags))
     formData.append('ingredients', JSON.stringify(form.value.ingredients))
     formData.append('steps', JSON.stringify(form.value.steps.map(step => ({
@@ -374,22 +364,7 @@ const handleSubmit = async () => {
       }
     })
 
-    const response = await fetch(API_ENDPOINTS.recipes.create, {
-      method: 'POST',
-      body: formData,
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null)
-      throw new Error(errorData?.message || 'Ошибка при создании рецепта')
-    }
-
-    const data = await response.json()
+    await createRecipe(formData)
     showSuccess('Рецепт успешно создан')
     router.push('/recipes')
   } catch (error) {
