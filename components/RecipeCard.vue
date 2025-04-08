@@ -2,7 +2,7 @@
   <div class="card bg-base-100 shadow-xl">
     <figure class="px-4 pt-4">
       <img
-        :src="recipe.image_url || '/images/placeholder.jpg'"
+        :src="recipe.image_url || '/images/placeholder.webp'"
         :alt="recipe.title"
         class="rounded-xl h-48 w-full object-cover"
       />

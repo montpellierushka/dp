@@ -37,7 +37,7 @@
             >
                 <figure class="relative h-72 overflow-hidden">
                     <img
-                        :src="recipe.image_url || '/images/placeholder.jpg'"
+                        :src="recipe.image_url || '/images/placeholder.webp'"
                         :alt="recipe.title"
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                     />

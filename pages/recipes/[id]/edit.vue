@@ -286,7 +286,7 @@ const submitting = ref(false)
 const error = ref<string | null>(null)
 
 const getImageUrl = (file: File | string | undefined): string => {
-    if (!file) return '/images/placeholder.jpg'
+    if (!file) return '/images/placeholder.webp'
     if (typeof file === 'string') {
         return file
     }

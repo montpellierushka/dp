@@ -9,7 +9,7 @@
         <div v-else-if="recipe" class="space-y-8">
             <div class="card bg-base-100 shadow-xl">
                 <figure class="px-4 pt-4">
-                    <img :src="recipe.image_url || '/images/placeholder.jpg'" :alt="recipe.title" class="rounded-xl h-96 w-full object-cover" />
+                    <img :src="recipe.image_url || '/images/placeholder.webp'" :alt="recipe.title" class="rounded-xl h-96 w-full object-cover" />
                 </figure>
                 <div class="card-body">
                     <h2 class="card-title">{{ recipe.title }}</h2>

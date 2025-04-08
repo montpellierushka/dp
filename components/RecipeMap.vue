@@ -485,7 +485,7 @@ const updateMarkers = (filteredRecipes = null) => {
             <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg transform transition-all duration-300 group-hover:scale-110"
                  style="background-color: ${getCountryColor(recipe.country)}">
               <img 
-                src="${recipe.imageUrl || '/placeholder.jpg'}" 
+                src="${recipe.imageUrl || '/placeholder.webp'}" 
                 alt="${recipe.title}"
                 class="w-full h-full object-cover"
               >
@@ -504,7 +504,7 @@ const updateMarkers = (filteredRecipes = null) => {
           <div class="w-64">
             <div class="relative h-32 mb-2">
               <img 
-                src="${recipe.imageUrl || '/placeholder.jpg'}" 
+                src="${recipe.imageUrl || '/placeholder.webp'}" 
                 alt="${recipe.title}"
                 class="w-full h-full object-cover rounded-t-lg"
               >
