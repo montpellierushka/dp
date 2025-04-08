@@ -3,14 +3,13 @@ import { useApi } from './useApi'
 import type { Recipe } from './useRecipes'
 import { API_ENDPOINTS } from '~/config/api'
 
-interface ApiResponseData<T> {
-    recipes?: Recipe[];
-    recipe?: Recipe;
-}
-
-interface ApiResponse<T> {
+interface ApiResponse {
     status: string;
-    data: ApiResponseData<T>;
+    message?: string;
+    data?: {
+        recipes?: Recipe[];
+        routes?: any[];
+    };
 }
 
 export const useFavorites = () => {
@@ -22,7 +21,7 @@ export const useFavorites = () => {
     const loadFavorites = async () => {
         try {
             loading.value = true
-            const response = await api.get<ApiResponse<Recipe[]>>(API_ENDPOINTS.favorites.list)
+            const response = await api.get<ApiResponse>(API_ENDPOINTS.favorites.list)
             if (response?.data?.recipes) {
                 favorites.value = response.data.recipes
             }
@@ -36,11 +35,11 @@ export const useFavorites = () => {
 
     const addToFavorites = async (recipeId: number) => {
         try {
-            const response = await api.post<ApiResponse<Recipe>>(API_ENDPOINTS.favorites.add(recipeId))
-            if (response?.data?.recipe) {
-                return response.data.recipe
+            const response = await api.post<ApiResponse>(API_ENDPOINTS.favorites.add(recipeId))
+            if (response?.status === 'success') {
+                return true
             }
-            throw new Error('Неверный формат ответа от сервера')
+            return false
         } catch (e) {
             console.error('Error adding to favorites:', e)
             throw e
@@ -49,11 +48,11 @@ export const useFavorites = () => {
 
     const removeFromFavorites = async (recipeId: number) => {
         try {
-            const response = await api.post<ApiResponse<Recipe>>(API_ENDPOINTS.favorites.remove(recipeId))
-            if (response?.data?.recipe) {
-                return response.data.recipe
+            const response = await api.del<ApiResponse>(API_ENDPOINTS.favorites.remove(recipeId))
+            if (response?.status === 'success') {
+                return true
             }
-            throw new Error('Неверный формат ответа от сервера')
+            return false
         } catch (e) {
             console.error('Error removing from favorites:', e)
             throw e
