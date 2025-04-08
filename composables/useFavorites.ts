@@ -4,20 +4,13 @@ import type { Recipe } from './useRecipes'
 import { API_ENDPOINTS } from '~/config/api'
 
 interface ApiResponseData<T> {
-    data: T;
+    recipes?: Recipe[];
+    recipe?: Recipe;
 }
 
 interface ApiResponse<T> {
     status: string;
     data: ApiResponseData<T>;
-}
-
-interface FavoritesListResponse {
-    recipes: Recipe[];
-}
-
-interface RecipeResponse {
-    recipe: Recipe;
 }
 
 export const useFavorites = () => {
@@ -29,8 +22,10 @@ export const useFavorites = () => {
     const loadFavorites = async () => {
         try {
             loading.value = true
-            const { data } = await api.get<ApiResponse<FavoritesListResponse>>(API_ENDPOINTS.favorites.list)
-            favorites.value = data.data.recipes
+            const response = await api.get<ApiResponse<Recipe[]>>(API_ENDPOINTS.favorites.list)
+            if (response?.data?.recipes) {
+                favorites.value = response.data.recipes
+            }
         } catch (e) {
             console.error('Error loading favorites:', e)
             error.value = 'Ошибка при загрузке избранного'
@@ -41,8 +36,11 @@ export const useFavorites = () => {
 
     const addToFavorites = async (recipeId: number) => {
         try {
-            const { data } = await api.post<ApiResponse<RecipeResponse>>(API_ENDPOINTS.favorites.add(recipeId))
-            return data.data.recipe
+            const response = await api.post<ApiResponse<Recipe>>(API_ENDPOINTS.favorites.add(recipeId))
+            if (response?.data?.recipe) {
+                return response.data.recipe
+            }
+            throw new Error('Неверный формат ответа от сервера')
         } catch (e) {
             console.error('Error adding to favorites:', e)
             throw e
@@ -51,8 +49,11 @@ export const useFavorites = () => {
 
     const removeFromFavorites = async (recipeId: number) => {
         try {
-            const { data } = await api.del<ApiResponse<RecipeResponse>>(API_ENDPOINTS.favorites.remove(recipeId))
-            return data.data.recipe
+            const response = await api.post<ApiResponse<Recipe>>(API_ENDPOINTS.favorites.remove(recipeId))
+            if (response?.data?.recipe) {
+                return response.data.recipe
+            }
+            throw new Error('Неверный формат ответа от сервера')
         } catch (e) {
             console.error('Error removing from favorites:', e)
             throw e
