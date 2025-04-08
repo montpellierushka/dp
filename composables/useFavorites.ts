@@ -3,6 +3,11 @@ import { useApi } from './useApi'
 import type { Recipe } from './useRecipes'
 import { API_ENDPOINTS } from '~/config/api'
 
+interface ApiResponse<T> {
+    status: string;
+    data: T;
+}
+
 export const useFavorites = () => {
     const api = useApi()
     const favorites = ref<Recipe[]>([])
@@ -11,18 +16,21 @@ export const useFavorites = () => {
 
     const loadFavorites = async () => {
         try {
-            const response = await api.get<Recipe[]>(API_ENDPOINTS.favorites.list)
-            favorites.value = response
+            loading.value = true
+            const response = await api.get<ApiResponse<Recipe[]>>(API_ENDPOINTS.favorites.list)
+            favorites.value = response.data
         } catch (e) {
             console.error('Error loading favorites:', e)
             error.value = 'Ошибка при загрузке избранного'
+        } finally {
+            loading.value = false
         }
     }
 
     const addToFavorites = async (recipeId: number) => {
         try {
-            const response = await api.post<Recipe>(API_ENDPOINTS.favorites.add(recipeId))
-            return response
+            const response = await api.post<ApiResponse<Recipe>>(API_ENDPOINTS.favorites.add(recipeId))
+            return response.data
         } catch (e) {
             console.error('Error adding to favorites:', e)
             throw e
@@ -31,8 +39,8 @@ export const useFavorites = () => {
 
     const removeFromFavorites = async (recipeId: number) => {
         try {
-            const response = await api.del<Recipe>(API_ENDPOINTS.favorites.remove(recipeId))
-            return response
+            const response = await api.del<ApiResponse<Recipe>>(API_ENDPOINTS.favorites.remove(recipeId))
+            return response.data
         } catch (e) {
             console.error('Error removing from favorites:', e)
             throw e
