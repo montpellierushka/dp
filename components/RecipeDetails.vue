@@ -15,7 +15,7 @@
                     <h2 class="card-title">{{ recipe.title }}</h2>
                     <p class="text-lg">{{ recipe.description }}</p>
                     <div class="flex gap-2 mt-4">
-                        <span class="badge badge-primary">{{ recipe.country?.name || 'Не указана' }}</span>
+                        <span class="badge badge-primary">{{ recipe.country.name || 'Не указана' }}</span>
                         <span class="badge badge-secondary">{{ recipe.cooking_time }} мин</span>
                     </div>
                     <div class="card-actions justify-between items-center mt-4">
@@ -58,7 +58,7 @@
                                 </div>
                                 <div class="flex-grow">
                                     <p>{{ step.description }}</p>
-                                    <img v-if="step.image_url" :src="step.image_url" :alt="`Шаг ${index + 1}`" class="mt-2 rounded-lg h-48 w-full object-cover" />
+                                    <img v-if="step.image" :src="step.image" :alt="`Шаг ${index + 1}`" class="mt-2 rounded-lg h-48 w-full object-cover" />
                                 </div>
                             </div>
                         </div>
@@ -84,11 +84,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useFavorites } from '~/composables/useFavorites'
-import type { Recipe } from '~/composables/useRecipes'
-
-interface RecipeWithFavorites extends Recipe {
-    favorites_count?: number
-}
+import type { Recipe } from '~/types/api'
 
 const props = defineProps<{
     recipeId: string | number
@@ -96,7 +92,7 @@ const props = defineProps<{
 
 const { user } = useAuth()
 const { favorites, toggleFavorite: toggleFavoriteApi, loading: favoritesLoading } = useFavorites()
-const recipe = ref<RecipeWithFavorites | null>(null)
+const recipe = ref<Recipe | null>(null)
 const loading = ref(false)
 const error = ref('')
 const isFavorite = ref(false)
@@ -106,7 +102,7 @@ const loadRecipe = async () => {
     loading.value = true
     error.value = ''
     try {
-        const response = await $fetch<{ data: RecipeWithFavorites }>(`/api/recipes/${props.recipeId}`)
+        const response = await $fetch<{ data: Recipe }>(`/api/recipes/${props.recipeId}`)
         recipe.value = response.data
         isFavorite.value = favorites.value.some(f => f.id === response.data.id)
         isOwner.value = response.data.author.id === user.value?.id

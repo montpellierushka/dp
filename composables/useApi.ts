@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { useRuntimeConfig } from '#app';
+import { API_BASE_URL } from '~/config/api';
 
 interface ApiResponse<T> {
     data: T;
@@ -11,8 +11,6 @@ interface ApiParams {
 }
 
 export const useApi = () => {
-    const config = useRuntimeConfig();
-    const baseURL = config.public.apiUrl || 'https://montpellierushka-backend-7c0b.twc1.net';
     const loading = ref(false);
     const error = ref('');
 
@@ -20,7 +18,7 @@ export const useApi = () => {
         loading.value = true;
         error.value = '';
         try {
-            const response = await $fetch<ApiResponse<T>>(`${baseURL}${url}`, {
+            const response = await $fetch<ApiResponse<T>>(`${API_BASE_URL}${url}`, {
                 params
             });
             return response.data;
@@ -37,7 +35,7 @@ export const useApi = () => {
         loading.value = true;
         error.value = '';
         try {
-            const response = await $fetch<ApiResponse<T>>(`${baseURL}${url}`, {
+            const response = await $fetch<ApiResponse<T>>(`${API_BASE_URL}${url}`, {
                 method: 'POST',
                 body: data
             });
@@ -55,7 +53,7 @@ export const useApi = () => {
         loading.value = true;
         error.value = '';
         try {
-            const response = await $fetch<ApiResponse<T>>(`${baseURL}${url}`, {
+            const response = await $fetch<ApiResponse<T>>(`${API_BASE_URL}${url}`, {
                 method: 'PUT',
                 body: data
             });
@@ -73,7 +71,7 @@ export const useApi = () => {
         loading.value = true;
         error.value = '';
         try {
-            const response = await $fetch<ApiResponse<T>>(`${baseURL}${url}`, {
+            const response = await $fetch<ApiResponse<T>>(`${API_BASE_URL}${url}`, {
                 method: 'DELETE'
             });
             return response.data;

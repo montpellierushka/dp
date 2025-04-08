@@ -16,7 +16,16 @@ export const $api = axios.create({
 $api.interceptors.response.use(
   response => response,
   error => {
-    console.error('API Error:', error)
+    if (error.response) {
+      // Обработка ошибок от сервера
+      console.error('API Error:', error.response.data)
+    } else if (error.request) {
+      // Ошибка сети
+      console.error('Network Error:', error.request)
+    } else {
+      // Другие ошибки
+      console.error('Error:', error.message)
+    }
     return Promise.reject(error)
   }
-) 
+)

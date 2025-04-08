@@ -17,9 +17,8 @@
       <div class="card-actions justify-between items-center mt-4">
         <div class="flex items-center gap-2">
           <button
-            v-if="user"
             class="btn btn-ghost btn-sm"
-            @click="toggleFavorite"
+            @click="toggleFavoriteHandler"
             :disabled="loading"
           >
             <svg
@@ -39,7 +38,7 @@
             </svg>
             <span>{{ recipe.favorites_count ?? 0 }}</span>
           </button>
-          <div v-else class="flex items-center gap-2">
+          <div class="flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5 text-gray-400"
@@ -72,29 +71,23 @@
 import { ref, onMounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useFavorites } from '~/composables/useFavorites'
-import type { Recipe } from '~/composables/useRecipes'
-
-interface RecipeWithFavorites extends Recipe {
-  favorites_count?: number
-}
+import type { Recipe } from '~/types/api'
 
 const props = defineProps<{
-  recipe: RecipeWithFavorites
+  recipe: Recipe
 }>()
 
-const { user } = useAuth()
-const { favorites, toggleFavorite: toggleFavoriteApi, loading } = useFavorites()
+const { favorites, toggleFavorite, loading } = useFavorites()
 const isFavorite = ref(false)
 
 onMounted(() => {
   isFavorite.value = favorites.value.some(f => f.id === props.recipe.id)
 })
 
-const toggleFavorite = async (): Promise<void> => {
-  if (!user.value) return
+const toggleFavoriteHandler = async (): Promise<void> => {
   
   try {
-    await toggleFavoriteApi(props.recipe.id)
+    await toggleFavorite(props.recipe.id)
     isFavorite.value = !isFavorite.value
     props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (isFavorite.value ? 1 : -1)
   } catch (error) {

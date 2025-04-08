@@ -250,8 +250,7 @@ import { useRecipes } from '~/composables/useRecipes'
 import { useNotifications } from '~/composables/useNotifications'
 import { useCountries } from '~/composables/useCountries'
 import { useTags } from '~/composables/useTags'
-import type { RecipeFormData } from '~/composables/useRecipes'
-import type { Tag } from '~/composables/useTags'
+import type { Recipe, Tag } from '~/types/api'
 
 const router = useRouter()
 const { createRecipe, updateRecipe, loadRecipe } = useRecipes()
@@ -269,20 +268,28 @@ const emit = defineEmits<{
 }>()
 
 const submitting = ref(false)
-const form = ref<RecipeFormData>({
+const form = ref({
     title: '',
     description: '',
     country_id: 0,
     cooking_time: 0,
     servings: 1,
-    difficulty: 'medium',
-    tags: [],
-    ingredients: [],
-    steps: [],
-    image: undefined
+    difficulty: 'medium' as 'easy' | 'medium' | 'hard',
+    tags: [] as number[],
+    ingredients: [] as Array<{
+        name: string
+        amount: string
+        unit: string
+    }>,
+    steps: [] as Array<{
+        description: string
+        image?: File | null
+    }>,
+    image: undefined as File | null
 })
 
-const getImageUrl = (file: File | string): string => {
+const getImageUrl = (file: File | string | null): string => {
+    if (!file) return ''
     if (typeof file === 'string') {
         return file
     }

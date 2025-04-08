@@ -15,9 +15,9 @@ export const API_ENDPOINTS = {
     user: '/api/auth/user',
   },
   favorites: {
-    list: '/api/favorites',
-    add: (recipeId: number) => `/api/favorites/recipes/${recipeId}`,
-    remove: (recipeId: number) => `/api/favorites/recipes/${recipeId}`,
+    list: '/favorites',
+    add: (recipeId: number) => `/favorites/recipes/${recipeId}`,
+    remove: (recipeId: number) => `/favorites/recipes/${recipeId}`,
   },
   webApp: {
     validateInitData: '/api/web-app/validate-init-data',

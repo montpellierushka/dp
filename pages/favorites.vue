@@ -33,7 +33,7 @@
 import { ref, onMounted } from 'vue'
 import { useFavorites } from '~/composables/useFavorites'
 import { useNotifications } from '~/composables/useNotifications'
-import type { Recipe } from '~/composables/useRecipes'
+import type { Recipe } from '~/types/api'
 
 const { favorites, loadFavorites, toggleFavorite } = useFavorites()
 const { showSuccess, showError } = useNotifications()

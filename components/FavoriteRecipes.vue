@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { Recipe } from '~/composables/useRecipes'
+import type { Recipe } from '~/types/api'
 import { API_ENDPOINTS } from '~/config/api'
 
 const recipes = ref<Recipe[]>([])

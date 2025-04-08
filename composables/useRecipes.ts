@@ -1,189 +1,178 @@
 import { ref } from 'vue'
-import { useApi } from './useApi'
-import { API_ENDPOINTS } from '~/config/api'
+import type { Recipe, RecipeStep } from '~/types/api'
 
-export interface Recipe {
-    id: number
-    title: string
-    description: string
-    image_url: string
-    cooking_time: number
-    servings: number
-    difficulty: 'easy' | 'medium' | 'hard'
-    country: {
-        id: number
-        name: string
-        code: string
-        flag: string
-        description: string
-        created_at: string
-        updated_at: string
-    }
-    tags: Array<{
-        id: number
-        name: string
-        slug: string
-        description: string
-        created_at: string
-        updated_at: string
-        pivot: {
-            recipe_id: number
-            tag_id: number
-        }
-    }>
-    ingredients: Array<{
-        name: string
-        amount: string
-        unit: string
-    }>
-    steps: Array<{
-        description: string
-        image_url?: string
-    }>
-    author: {
-        id: number
-        name: string
-        photo_url: string
-    }
-    created_at: string
-    updated_at: string
-    is_favorite: boolean
-}
-
-export interface RecipeFilters {
+interface RecipeFilters {
+    search?: string
     country_id?: number
+    tags?: number[]
+    difficulty?: string
     cooking_time?: number
-    sort?: string
-    direction?: string
-    tags?: string
-    [key: string]: string | number | undefined
 }
 
-export interface RecipeFormData {
+interface RecipeFormData {
     title: string
     description: string
     country_id: number
     cooking_time: number
     servings: number
-    difficulty: 'easy' | 'medium' | 'hard'
+    difficulty: string
     tags: number[]
-    ingredients: {
+    ingredients: Array<{
         name: string
-        amount: string
+        amount: number
         unit: string
-    }[]
-    steps: {
+    }>
+    steps: Array<{
         description: string
-        image?: File
-    }[]
-    image?: File
+        image?: File | null
+    }>
+    image?: File | null
 }
 
-export const useRecipes = () => {
-    const api = useApi()
+export function useRecipes() {
+    const { $recipeApi } = useNuxtApp()
     const recipes = ref<Recipe[]>([])
     const recipe = ref<Recipe | null>(null)
     const loading = ref(false)
     const error = ref('')
 
-    const loadRecipes = async (filters: RecipeFilters = {}) => {
+    const loadRecipes = async (filters?: RecipeFilters) => {
+        loading.value = true
+        error.value = ''
         try {
-            const response = await api.get<{
-                current_page: number
-                data: Recipe[]
-                first_page_url: string
-                from: number
-                last_page: number
-                last_page_url: string
-                links: Array<{ url: string | null; label: string; active: boolean }>
-                next_page_url: string | null
-                path: string
-                per_page: number
-                prev_page_url: string | null
-                to: number
-                total: number
-            }>(API_ENDPOINTS.recipes.list, filters)
-            
-            if (!response?.data || !Array.isArray(response.data)) {
-                throw new Error('Неверный формат данных от API')
-            }
-            
+            const response = await $recipeApi.getRecipes(filters)
             recipes.value = response.data
-            return response.data
         } catch (e) {
             error.value = 'Ошибка при загрузке рецептов'
-            throw e
+            console.error('Error loading recipes:', e)
+        } finally {
+            loading.value = false
         }
     }
 
     const loadRecipe = async (id: number) => {
+        loading.value = true
+        error.value = ''
         try {
-            const response = await api.get<Recipe>(API_ENDPOINTS.recipes.get(id))
-            
-            if (!response) {
-                throw new Error('Неверный формат данных от API')
-            }
-            
-            recipe.value = response
-            return response
-        } catch (error) {
-            console.error('Ошибка при загрузке рецепта:', error)
-            throw error
+            const response = await $recipeApi.getRecipe(id)
+            recipe.value = response.data
+        } catch (e) {
+            error.value = 'Ошибка при загрузке рецепта'
+            console.error('Error loading recipe:', e)
+        } finally {
+            loading.value = false
         }
     }
 
-    const createRecipe = async (data: FormData) => {
+    const createRecipe = async (data: RecipeFormData) => {
+        loading.value = true
+        error.value = ''
         try {
-            const response = await api.post<Recipe>(API_ENDPOINTS.recipes.create, data)
-            recipes.value.push(response)
-            return response
+            const formData = new FormData()
+            Object.entries(data).forEach(([key, value]) => {
+                if (key === 'ingredients' || key === 'steps' || key === 'tags') {
+                    formData.append(key, JSON.stringify(value))
+                } else if (value instanceof File) {
+                    formData.append(key, value)
+                } else {
+                    formData.append(key, String(value))
+                }
+            })
+
+            const response = await $recipeApi.createRecipe(formData)
+            recipes.value.unshift(response.data)
+            return response.data
         } catch (e) {
             error.value = 'Ошибка при создании рецепта'
+            console.error('Error creating recipe:', e)
             throw e
+        } finally {
+            loading.value = false
         }
     }
 
-    const updateRecipe = async (id: number, data: FormData) => {
+    const updateRecipe = async (id: number, data: Partial<RecipeFormData>) => {
+        loading.value = true
+        error.value = ''
         try {
-            const response = await api.put<Recipe>(API_ENDPOINTS.recipes.update(id), data)
-            return response
+            const formData = new FormData()
+            Object.entries(data).forEach(([key, value]) => {
+                if (value === null || value === undefined) return
+                if (key === 'ingredients' || key === 'steps' || key === 'tags') {
+                    formData.append(key, JSON.stringify(value))
+                } else if (value instanceof File) {
+                    formData.append(key, value)
+                } else {
+                    formData.append(key, String(value))
+                }
+            })
+
+            const response = await $recipeApi.updateRecipe(id, formData)
+            const index = recipes.value.findIndex((r: Recipe) => r.id === id)
+            if (index !== -1) {
+                recipes.value[index] = response.data
+            }
+            if (recipe.value?.id === id) {
+                recipe.value = response.data
+            }
+            return response.data
         } catch (e) {
+            error.value = 'Ошибка при обновлении рецепта'
+            console.error('Error updating recipe:', e)
             throw e
+        } finally {
+            loading.value = false
         }
     }
 
     const deleteRecipe = async (id: number) => {
+        loading.value = true
+        error.value = ''
         try {
-            await api.del(API_ENDPOINTS.recipes.delete(id))
+            await $recipeApi.deleteRecipe(id)
+            recipes.value = recipes.value.filter((r: Recipe) => r.id !== id)
+            if (recipe.value?.id === id) {
+                recipe.value = null
+            }
         } catch (e) {
+            error.value = 'Ошибка при удалении рецепта'
+            console.error('Error deleting recipe:', e)
             throw e
+        } finally {
+            loading.value = false
         }
     }
 
     const toggleFavorite = async (id: number) => {
         try {
-            const response = await api.post<Recipe>(API_ENDPOINTS.favorites.add(id))
-            return response
+            const { $favoriteApi } = useNuxtApp()
+            const response = await $favoriteApi.addRecipe(id)
+            const index = recipes.value.findIndex((r: Recipe) => r.id === id)
+            if (index !== -1) {
+                recipes.value[index] = response.data
+            }
+            if (recipe.value?.id === id) {
+                recipe.value = response.data
+            }
+            return response.data
         } catch (e) {
+            console.error('Error toggling favorite:', e)
             throw e
         }
     }
 
-    const loadFavorites = async () => {
+    const loadUserRecipes = async (userId: number) => {
+        loading.value = true
+        error.value = ''
         try {
-            const response = await api.get<Recipe[]>(API_ENDPOINTS.favorites.list)
-            recipes.value = response
+            const { $api } = useNuxtApp()
+            const response = await $api.get(`/users/${userId}/recipes`)
+            recipes.value = response.data.data
         } catch (e) {
-            error.value = 'Ошибка при загрузке избранного'
-        }
-    }
-
-    const loadMyRecipes = async () => {
-        try {
-            const response = await api.get<Recipe[]>(API_ENDPOINTS.user.recipes)
-            recipes.value = response
-        } catch (e) {
-            error.value = 'Ошибка при загрузке моих рецептов'
+            error.value = 'Ошибка при загрузке рецептов пользователя'
+            console.error('Error loading user recipes:', e)
+        } finally {
+            loading.value = false
         }
     }
 
@@ -198,7 +187,6 @@ export const useRecipes = () => {
         updateRecipe,
         deleteRecipe,
         toggleFavorite,
-        loadFavorites,
-        loadMyRecipes
+        loadUserRecipes
     }
 } 
