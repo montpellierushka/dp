@@ -25,7 +25,7 @@
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5"
-              :class="{ 'text-red-500': isFavorite }"
+              :class="{ 'text-red-500': isFavoriteValue }"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useFavorites } from '~/composables/useFavorites'
 import type { Recipe } from '~/composables/useRecipes'
@@ -83,20 +83,15 @@ const props = defineProps<{
 }>()
 
 const { user } = useAuth()
-const { favorites, toggleFavorite: toggleFavoriteApi, loading } = useFavorites()
-const isFavorite = ref(false)
-
-onMounted(() => {
-  isFavorite.value = favorites.value.some(f => f.id === props.recipe.id)
-})
+const { favorites, toggleFavorite: toggleFavoriteApi, loading, isFavorite } = useFavorites()
+const isFavoriteValue = computed(() => isFavorite(props.recipe.id))
 
 const toggleFavorite = async (): Promise<void> => {
   if (!user.value) return
   
   try {
     await toggleFavoriteApi(props.recipe.id)
-    isFavorite.value = !isFavorite.value
-    props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (isFavorite.value ? 1 : -1)
+    props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (isFavoriteValue.value ? 1 : -1)
   } catch (error) {
     console.error('Error toggling favorite:', error)
   }

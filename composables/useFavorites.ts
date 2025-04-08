@@ -73,10 +73,13 @@ export const useFavorites = () => {
         }
     }
 
+    const isFavorite = (recipeId: number) => {
+        return favorites.value.some(recipe => recipe.id === recipeId)
+    }
+
     const toggleFavorite = async (recipeId: number) => {
         try {
-            const recipe = favorites.value.find(r => r.id === recipeId)
-            if (recipe) {
+            if (isFavorite(recipeId)) {
                 return await removeFromFavorites(recipeId)
             } else {
                 return await addToFavorites(recipeId)
@@ -94,6 +97,7 @@ export const useFavorites = () => {
         loadFavorites,
         addToFavorites,
         removeFromFavorites,
-        toggleFavorite
+        toggleFavorite,
+        isFavorite
     }
 } 
