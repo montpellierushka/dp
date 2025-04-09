@@ -232,8 +232,12 @@ const loadRecipeData = async () => {
   
   try {
     const recipeId = Number(route.params.id)
-    await loadRecipe(recipeId)
+    const recipeData = await loadRecipe(recipeId)
+    recipe.value = recipeData
     await loadFavorites() // Загружаем список избранного для проверки статуса
+    if (recipe.value) {
+      recipe.value.is_favorite = favorites.value.some(f => f.id === recipeId)
+    }
   } catch (err) {
     error.value = 'Не удалось загрузить рецепт'
     console.error('Ошибка при загрузке рецепта:', err)
