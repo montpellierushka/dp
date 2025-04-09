@@ -92,9 +92,11 @@ const toggleFavorite = async (): Promise<void> => {
   if (!user.value) return
   
   try {
-    await toggleFavoriteApi(props.recipe.id)
-    showSuccess(isFavoriteValue.value ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
-    props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (isFavoriteValue.value ? 1 : -1)
+    const success = await toggleFavoriteApi(props.recipe.id)
+    if (success) {
+      showSuccess(isFavoriteValue.value ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
+      props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (isFavoriteValue.value ? 1 : -1)
+    }
   } catch (error) {
     showError('Произошла ошибка при изменении избранного')
     console.error('Error toggling favorite:', error)

@@ -42,9 +42,13 @@ export const useFavorites = () => {
             // Обновляем список избранного
             await loadFavorites()
             return true
-        } catch (e) {
+        } catch (e: any) {
             console.error('Error adding to favorites:', e)
-            error.value = 'Ошибка при добавлении в избранное'
+            // Если рецепт уже в избранном, считаем это успешным результатом
+            if (e.response?.status === 400 && e.response?.data?.message?.includes('уже добавлен')) {
+                return true
+            }
+            error.value = e.response?.data?.message || 'Ошибка при добавлении в избранное'
             return false
         } finally {
             loading.value = false
@@ -61,9 +65,9 @@ export const useFavorites = () => {
             // Обновляем список избранного
             await loadFavorites()
             return true
-        } catch (e) {
+        } catch (e: any) {
             console.error('Error removing from favorites:', e)
-            error.value = 'Ошибка при удалении из избранного'
+            error.value = e.response?.data?.message || 'Ошибка при удалении из избранного'
             return false
         } finally {
             loading.value = false
