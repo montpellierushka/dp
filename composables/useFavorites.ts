@@ -1,12 +1,8 @@
 import { ref } from 'vue'
 import type { Recipe } from './useRecipes'
 
-interface FavoritesResponse {
-    data: {
-        recipes: {
-            data: Recipe[]
-        }
-    }
+interface ApiResponse<T> {
+    data: T
 }
 
 export const useFavorites = () => {
@@ -20,9 +16,9 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            const response = await $api.get<FavoritesResponse>('/api/favorites')
-            if (response?.data?.data?.recipes?.data) {
-                favorites.value = response.data.data.recipes.data
+            const response = await $api.get<ApiResponse<Recipe[]>>('/api/favorites')
+            if (response?.data?.data) {
+                favorites.value = response.data.data
             }
         } catch (e) {
             console.error('Error loading favorites:', e)
