@@ -72,6 +72,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useFavorites } from '~/composables/useFavorites'
+import { useNotifications } from '~/composables/useNotifications'
 import type { Recipe } from '~/composables/useRecipes'
 
 interface RecipeWithFavorites extends Recipe {
@@ -83,7 +84,8 @@ const props = defineProps<{
 }>()
 
 const { user } = useAuth()
-const { favorites, toggleFavorite: toggleFavoriteApi, loading, isFavorite } = useFavorites()
+const { favorites, toggleFavorite: toggleFavoriteApi, loading, isFavorite, loadFavorites } = useFavorites()
+const { showSuccess, showError } = useNotifications()
 const isFavoriteValue = computed(() => isFavorite(props.recipe.id))
 
 const toggleFavorite = async (): Promise<void> => {
@@ -91,11 +93,17 @@ const toggleFavorite = async (): Promise<void> => {
   
   try {
     await toggleFavoriteApi(props.recipe.id)
+    showSuccess(isFavoriteValue.value ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
     props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (isFavoriteValue.value ? 1 : -1)
   } catch (error) {
+    showError('Произошла ошибка при изменении избранного')
     console.error('Error toggling favorite:', error)
   }
 }
+
+onMounted(async () => {
+  await loadFavorites()
+})
 </script>
 
 <style scoped>
