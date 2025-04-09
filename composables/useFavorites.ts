@@ -2,7 +2,16 @@ import { ref } from 'vue'
 import type { Recipe } from './useRecipes'
 
 interface ApiResponse<T> {
-    data: T
+    status: string
+    data: {
+        recipes: {
+            data: T[]
+            total: number
+            per_page: number
+            current_page: number
+            last_page: number
+        }
+    }
 }
 
 export const useFavorites = () => {
@@ -16,9 +25,9 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            const response = await $api.get<ApiResponse<Recipe[]>>('/api/favorites')
-            if (response?.data?.data) {
-                favorites.value = response.data.data
+            const response = await $api.get<ApiResponse<Recipe>>('/api/favorites')
+            if (response?.data?.data?.recipes?.data) {
+                favorites.value = response.data.data.recipes.data
             }
         } catch (e) {
             console.error('Error loading favorites:', e)
@@ -33,11 +42,13 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            await $api.post(`/api/favorites/recipes/${recipeId}`)
-            
-            // Обновляем список избранного
-            await loadFavorites()
-            return true
+            const response = await $api.post(`/api/favorites/recipes/${recipeId}`)
+            if (response?.data?.status === 'success') {
+                // Обновляем список избранного
+                await loadFavorites()
+                return true
+            }
+            return false
         } catch (e: any) {
             console.error('Error adding to favorites:', e)
             // Если рецепт уже в избранном, считаем это успешным результатом
@@ -56,11 +67,13 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            await $api.delete(`/api/favorites/recipes/${recipeId}`)
-            
-            // Обновляем список избранного
-            await loadFavorites()
-            return true
+            const response = await $api.delete(`/api/favorites/recipes/${recipeId}`)
+            if (response?.data?.status === 'success') {
+                // Обновляем список избранного
+                await loadFavorites()
+                return true
+            }
+            return false
         } catch (e: any) {
             console.error('Error removing from favorites:', e)
             error.value = e.response?.data?.message || 'Ошибка при удалении из избранного'

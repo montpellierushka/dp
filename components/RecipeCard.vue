@@ -83,18 +83,17 @@ const props = defineProps<{
   recipe: RecipeWithFavorites
 }>()
 
-const { user } = useAuth()
 const { favorites, toggleFavorite: toggleFavoriteApi, loading, isFavorite, loadFavorites } = useFavorites()
 const { showSuccess, showError } = useNotifications()
-const isFavoriteValue = computed(() => isFavorite(props.recipe.id))
+const isFavoriteValue = computed(() => props.recipe.is_favorite)
 
 const toggleFavorite = async (): Promise<void> => {
-  if (!user.value) return
   
   try {
     const success = await toggleFavoriteApi(props.recipe.id)
     if (success) {
       showSuccess(isFavoriteValue.value ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
+      props.recipe.is_favorite = !isFavoriteValue.value
       props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (isFavoriteValue.value ? 1 : -1)
     }
   } catch (error) {
