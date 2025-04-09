@@ -190,7 +190,7 @@ const route = useRoute()
 const router = useRouter()
 const { user } = useAuth()
 const { loadRecipe, deleteRecipe } = useRecipes()
-const { favorites, toggleFavorite: toggleFavoriteApi } = useFavorites()
+const { favorites, toggleFavorite: toggleFavoriteApi, loadFavorites } = useFavorites()
 const { showSuccess, showError } = useNotifications()
 
 const recipe = ref<Recipe | null>(null)
@@ -205,8 +205,14 @@ const isFavorite = computed(() => {
 const handleToggleFavorite = async () => {
     if (!recipe.value) return
     try {
-        await toggleFavoriteApi(recipe.value.id)
-        showSuccess(isFavorite.value ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
+        const success = await toggleFavoriteApi(recipe.value.id)
+        if (success) {
+            // Обновляем список избранного
+            await loadFavorites()
+            // Обновляем состояние рецепта
+            recipe.value.is_favorite = !recipe.value.is_favorite
+            showSuccess(recipe.value.is_favorite ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
+        }
     } catch (e) {
         showError('Произошла ошибка при изменении избранного')
         console.error('Error toggling favorite:', e)
