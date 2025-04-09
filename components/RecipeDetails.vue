@@ -21,7 +21,7 @@
                     <div class="card-actions justify-between items-center mt-4">
                         <div class="flex items-center gap-2">
                             <button class="btn btn-ghost" @click="toggleFavorite">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" :class="{ 'text-red-500': isFavorite }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" :class="{ 'text-red-500': isFavoriteValue }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                 </svg>
                                 <span>{{ recipe.favorites_count ?? 0 }}</span>
@@ -81,9 +81,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 import { useFavorites } from '~/composables/useFavorites'
+import { useNotifications } from '~/composables/useNotifications'
 import type { Recipe } from '~/composables/useRecipes'
 
 interface RecipeWithFavorites extends Recipe {
@@ -95,11 +96,12 @@ const props = defineProps<{
 }>()
 
 const { user } = useAuth()
-const { favorites, toggleFavorite: toggleFavoriteApi, loading: favoritesLoading } = useFavorites()
+const { favorites, toggleFavorite: toggleFavoriteApi, loading: favoritesLoading, isFavorite, loadFavorites } = useFavorites()
+const { showSuccess, showError } = useNotifications()
 const recipe = ref<RecipeWithFavorites | null>(null)
 const loading = ref(false)
 const error = ref('')
-const isFavorite = ref(false)
+const isFavoriteValue = computed(() => recipe.value ? isFavorite(recipe.value.id) : false)
 const isOwner = ref(false)
 
 const loadRecipe = async () => {
@@ -108,7 +110,6 @@ const loadRecipe = async () => {
     try {
         const response = await $fetch<{ data: RecipeWithFavorites }>(`/api/recipes/${props.recipeId}`)
         recipe.value = response.data
-        isFavorite.value = favorites.value.some(f => f.id === response.data.id)
         isOwner.value = response.data.author.id === user.value?.id
     } catch (e) {
         error.value = 'Ошибка при загрузке рецепта'
@@ -122,9 +123,10 @@ const toggleFavorite = async () => {
     if (!recipe.value) return
     try {
         await toggleFavoriteApi(recipe.value.id)
-        isFavorite.value = !isFavorite.value
-        recipe.value.favorites_count = (recipe.value.favorites_count ?? 0) + (isFavorite.value ? 1 : -1)
+        showSuccess(isFavoriteValue.value ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
+        recipe.value.favorites_count = (recipe.value.favorites_count ?? 0) + (isFavoriteValue.value ? 1 : -1)
     } catch (error) {
+        showError('Произошла ошибка при изменении избранного')
         console.error('Error toggling favorite:', error)
     }
 }
@@ -143,7 +145,10 @@ const deleteRecipe = async () => {
     }
 }
 
-onMounted(() => {
-    loadRecipe()
+onMounted(async () => {
+    await Promise.all([
+        loadRecipe(),
+        loadFavorites()
+    ])
 })
 </script> 
