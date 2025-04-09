@@ -199,7 +199,8 @@ const error = ref<string | null>(null)
 
 const isFavorite = computed(() => {
     if (!recipe.value) return false
-    return favorites.value.some(f => f.id === recipe.value?.id)
+    console.log(recipe.value)
+    return recipe.value.is_favorite
 })
 
 const handleToggleFavorite = async () => {
@@ -207,8 +208,6 @@ const handleToggleFavorite = async () => {
     try {
         const success = await toggleFavoriteApi(recipe.value.id)
         if (success) {
-            // Обновляем список избранного
-            await loadFavorites()
             // Обновляем состояние рецепта
             recipe.value.is_favorite = !recipe.value.is_favorite
             showSuccess(recipe.value.is_favorite ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
