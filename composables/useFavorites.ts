@@ -87,25 +87,22 @@ export const useFavorites = () => {
         return favorites.value.some(recipe => recipe.id === recipeId)
     }
 
-    const toggleFavorite = async (recipeId: number) => {
+    const toggleFavorite = async (recipe: Recipe) => {
         try {
-            // Получаем текущий рецепт из API
-            const recipeResponse = await $api.get(`/api/recipes/${recipeId}`)
-            const recipe = recipeResponse?.data
+            loading.value = true
+            error.value = ''
             
-            if (!recipe) {
-                throw new Error('Рецепт не найден')
-            }
-            
-            // Используем поле is_favorite из рецепта
             if (recipe.is_favorite) {
-                return await removeFromFavorites(recipeId)
+                return await removeFromFavorites(recipe.id)
             } else {
-                return await addToFavorites(recipeId)
+                return await addToFavorites(recipe.id)
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error('Error toggling favorite:', e)
-            throw e
+            error.value = e.response?.data?.message || 'Ошибка при изменении статуса избранного'
+            return false
+        } finally {
+            loading.value = false
         }
     }
 

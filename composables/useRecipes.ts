@@ -48,6 +48,7 @@ export interface Recipe {
     created_at: string
     updated_at: string
     is_favorite: boolean
+    favorites_count?: number
 }
 
 export interface RecipeFilters {

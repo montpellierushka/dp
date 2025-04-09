@@ -122,7 +122,7 @@ const loadRecipe = async () => {
 const handleToggleFavorite = async () => {
     if (!recipe.value) return
     try {
-        const success = await toggleFavoriteApi(recipe.value.id)
+        const success = await toggleFavoriteApi(recipe.value)
         if (success) {
             recipe.value.is_favorite = !recipe.value.is_favorite
             recipe.value.favorites_count = (recipe.value.favorites_count ?? 0) + (recipe.value.is_favorite ? 1 : -1)

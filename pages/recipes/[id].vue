@@ -203,14 +203,13 @@ const handleToggleFavorite = async () => {
   if (!recipe.value) return
   
   try {
-    await toggleFavoriteApi(recipe.value.id)
+    await toggleFavoriteApi(recipe.value)
     // Обновляем состояние рецепта
     if (recipe.value) {
       recipe.value.is_favorite = !recipe.value.is_favorite
     }
-    showSuccess(recipe.value.is_favorite ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
-  } catch (err) {
-    showError('Не удалось обновить статус избранного')
+  } catch (e) {
+    console.error('Error toggling favorite:', e)
   }
 }
 
