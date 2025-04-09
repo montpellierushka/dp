@@ -17,7 +17,6 @@
       <div class="card-actions justify-between items-center mt-4">
         <div class="flex items-center gap-2">
           <button
-            v-if="user"
             class="btn btn-ghost btn-sm"
             @click="toggleFavorite"
             :disabled="loading"
@@ -39,7 +38,7 @@
             </svg>
             <span>{{ recipe.favorites_count ?? 0 }}</span>
           </button>
-          <div v-else class="flex items-center gap-2">
+          <div class="flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="h-5 w-5 text-gray-400"
