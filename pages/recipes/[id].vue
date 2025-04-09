@@ -197,25 +197,21 @@ const recipe = ref<Recipe | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 
-const isFavorite = computed(() => {
-    if (!recipe.value) return false
-    console.log(recipe.value)
-    return recipe.value.is_favorite
-})
+const isFavorite = computed(() => recipe.value?.is_favorite || false)
 
 const handleToggleFavorite = async () => {
-    if (!recipe.value) return
-    try {
-        const success = await toggleFavoriteApi(recipe.value.id)
-        if (success) {
-            // Обновляем состояние рецепта
-            recipe.value.is_favorite = !recipe.value.is_favorite
-            showSuccess(recipe.value.is_favorite ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
-        }
-    } catch (e) {
-        showError('Произошла ошибка при изменении избранного')
-        console.error('Error toggling favorite:', e)
+  if (!recipe.value) return
+  
+  try {
+    await toggleFavoriteApi(recipe.value.id)
+    // Обновляем состояние рецепта
+    if (recipe.value) {
+      recipe.value.is_favorite = !recipe.value.is_favorite
     }
+    showSuccess(recipe.value.is_favorite ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
+  } catch (err) {
+    showError('Не удалось обновить статус избранного')
+  }
 }
 
 const handleDeleteRecipe = async () => {
@@ -230,27 +226,23 @@ const handleDeleteRecipe = async () => {
     }
 }
 
-onMounted(async () => {
-    try {
-        loading.value = true
-        error.value = null
-        const recipeId = Number(route.params.id)
-        
-        if (isNaN(recipeId)) {
-            throw new Error('Неверный ID рецепта')
-        }
-        
-        const loadedRecipe = await loadRecipe(recipeId)
-        if (!loadedRecipe) {
-            throw new Error('Рецепт не найден')
-        }
-        recipe.value = loadedRecipe
-    } catch (e) {
-        error.value = e instanceof Error ? e.message : 'Произошла ошибка при загрузке рецепта'
-        showError(error.value)
-        console.error('Error loading recipe:', e)
-    } finally {
-        loading.value = false
-    }
+const loadRecipeData = async () => {
+  loading.value = true
+  error.value = null
+  
+  try {
+    const recipeId = Number(route.params.id)
+    await loadRecipe(recipeId)
+    await loadFavorites() // Загружаем список избранного для проверки статуса
+  } catch (err) {
+    error.value = 'Не удалось загрузить рецепт'
+    console.error('Ошибка при загрузке рецепта:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadRecipeData()
 })
 </script> 

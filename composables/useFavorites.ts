@@ -89,7 +89,16 @@ export const useFavorites = () => {
 
     const toggleFavorite = async (recipeId: number) => {
         try {
-            if (isFavorite(recipeId)) {
+            // Получаем текущий рецепт из API
+            const recipeResponse = await $api.get(`/api/recipes/${recipeId}`)
+            const recipe = recipeResponse?.data
+            
+            if (!recipe) {
+                throw new Error('Рецепт не найден')
+            }
+            
+            // Используем поле is_favorite из рецепта
+            if (recipe.is_favorite) {
                 return await removeFromFavorites(recipeId)
             } else {
                 return await addToFavorites(recipeId)

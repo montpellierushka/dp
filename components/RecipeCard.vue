@@ -87,16 +87,14 @@ const { showSuccess, showError } = useNotifications()
 const isFavoriteValue = computed(() => props.recipe.is_favorite)
 
 const toggleFavorite = async (): Promise<void> => {
-  
   try {
-    const success = await toggleFavoriteApi(props.recipe.id)
-    if (success) {
-      showSuccess(isFavoriteValue.value ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
-      props.recipe.is_favorite = !isFavoriteValue.value
-      props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (isFavoriteValue.value ? 1 : -1)
-    }
+    await toggleFavoriteApi(props.recipe.id)
+    // Обновляем состояние рецепта
+    props.recipe.is_favorite = !props.recipe.is_favorite
+    props.recipe.favorites_count = (props.recipe.favorites_count ?? 0) + (props.recipe.is_favorite ? 1 : -1)
+    showSuccess(props.recipe.is_favorite ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
   } catch (error) {
-    showError('Произошла ошибка при изменении избранного')
+    showError('Не удалось обновить статус избранного')
     console.error('Error toggling favorite:', error)
   }
 }

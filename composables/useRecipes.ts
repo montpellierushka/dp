@@ -125,6 +125,10 @@ export const useRecipes = () => {
             }
             
             recipe.value = response
+            await loadFavorites()
+            if (recipe.value) {
+                recipe.value.is_favorite = recipes.value.some(r => r.id === id)
+            }
             return response
         } catch (error) {
             console.error('Ошибка при загрузке рецепта:', error)
