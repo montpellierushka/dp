@@ -80,12 +80,16 @@ export interface RecipeFormData {
     image?: File
 }
 
+interface ApiResponse<T> {
+    data: T;
+}
+
 export const useRecipes = () => {
     const api = useApi()
     const recipes = ref<Recipe[]>([])
     const recipe = ref<Recipe | null>(null)
     const loading = ref(false)
-    const error = ref('')
+    const error = ref<string | null>(null)
 
     const loadRecipes = async (filters: RecipeFilters = {}) => {
         try {
@@ -133,14 +137,25 @@ export const useRecipes = () => {
         }
     }
 
-    const createRecipe = async (data: FormData) => {
+    const createRecipe = async (recipeData: RecipeFormData) => {
         try {
-            const response = await api.post<Recipe>(API_ENDPOINTS.recipes.create, data)
-            recipes.value.push(response)
-            return response
-        } catch (e) {
-            error.value = 'Ошибка при создании рецепта'
-            throw e
+            loading.value = true
+            error.value = null
+            
+            // Добавляем user_id для тестового пользователя
+            const recipeWithUser = {
+                ...recipeData,
+                user_id: 1 // Тестовый пользователь с id 1
+            }
+            
+            const response: ApiResponse<any> = await api.post('/recipes', recipeWithUser)
+            recipes.value.push(response.data)
+            return response.data
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Произошла ошибка'
+            throw err
+        } finally {
+            loading.value = false
         }
     }
 
@@ -188,6 +203,19 @@ export const useRecipes = () => {
         }
     }
 
+    const fetchRecipes = async () => {
+        try {
+            loading.value = true
+            error.value = null
+            const response: ApiResponse<any> = await api.get('/recipes')
+            recipes.value = response.data
+        } catch (err) {
+            error.value = err instanceof Error ? err.message : 'Произошла ошибка'
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         recipes,
         recipe,
@@ -200,6 +228,7 @@ export const useRecipes = () => {
         deleteRecipe,
         toggleFavorite,
         loadFavorites,
-        loadMyRecipes
+        loadMyRecipes,
+        fetchRecipes
     }
 } 

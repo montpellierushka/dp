@@ -357,11 +357,25 @@ const submitForm = async (): Promise<void> => {
             }
         })
 
+        // Преобразуем FormData в RecipeFormData
+        const recipeData: RecipeFormData = {
+            title: form.value.title,
+            description: form.value.description,
+            country_id: form.value.country_id,
+            cooking_time: form.value.cooking_time,
+            servings: form.value.servings,
+            difficulty: form.value.difficulty,
+            tags: form.value.tags,
+            ingredients: form.value.ingredients,
+            steps: form.value.steps,
+            image: form.value.image
+        };
+
         if (props.recipeId) {
             await updateRecipe(props.recipeId, formData)
             showSuccess('Рецепт успешно обновлен')
         } else {
-            await createRecipe(formData)
+            await createRecipe(recipeData)
             showSuccess('Рецепт успешно создан')
         }
         emit('success')
