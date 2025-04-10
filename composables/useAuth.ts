@@ -8,6 +8,7 @@ export interface User {
     email: string
     telegram_id: string
     photo_url: string
+    token: string
 }
 
 export const useAuth = () => {

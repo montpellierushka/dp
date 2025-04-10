@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import type { Recipe } from './useRecipes'
+import { useNuxtApp } from 'nuxt/app'
 
 interface ApiResponse<T> {
     status: string
@@ -14,8 +15,18 @@ interface ApiResponse<T> {
     }
 }
 
+interface ApiSuccessResponse {
+    status: 'success'
+    data: any
+}
+
 export const useFavorites = () => {
-    const { $api } = useNuxtApp()
+    const nuxtApp = useNuxtApp()
+    const $api = nuxtApp.$api as {
+        get: <T>(url: string) => Promise<{ data: T }>
+        post: <T>(url: string, data?: any) => Promise<{ data: T }>
+        delete: <T>(url: string) => Promise<{ data: T }>
+    }
     const favorites = ref<Recipe[]>([])
     const loading = ref(false)
     const error = ref('')
@@ -42,16 +53,14 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            const response = await $api.post(`/api/favorites/recipes/${recipeId}`)
+            const response = await $api.post<ApiSuccessResponse>(`/api/favorites/recipes/${recipeId}`)
             if (response?.data?.status === 'success') {
-                // Обновляем список избранного
                 await loadFavorites()
                 return true
             }
             return false
         } catch (e: any) {
             console.error('Error adding to favorites:', e)
-            // Если рецепт уже в избранном, считаем это успешным результатом
             if (e.response?.status === 400 && e.response?.data?.message?.includes('уже добавлен')) {
                 return true
             }
@@ -67,9 +76,8 @@ export const useFavorites = () => {
             loading.value = true
             error.value = ''
             
-            const response = await $api.delete(`/api/favorites/recipes/${recipeId}`)
+            const response = await $api.delete<ApiSuccessResponse>(`/api/favorites/recipes/${recipeId}`)
             if (response?.data?.status === 'success') {
-                // Обновляем список избранного
                 await loadFavorites()
                 return true
             }

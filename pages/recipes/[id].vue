@@ -1,171 +1,152 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-primary/10">
+  <div class="min-h-screen bg-gray-50">
     <!-- Загрузка -->
     <div v-if="loading" class="flex justify-center items-center min-h-screen">
-      <div class="loading loading-spinner loading-lg text-primary"></div>
+      <div class="animate-pulse flex flex-col items-center gap-4">
+        <div class="w-20 h-20 bg-primary rounded-full animate-bounce"></div>
+        <span class="text-gray-600 font-medium">Загружаем рецепт...</span>
+      </div>
     </div>
 
     <!-- Ошибка -->
     <div v-else-if="error" class="container mx-auto px-4 py-8">
-      <div class="alert alert-error shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span>{{ error }}</span>
+      <div class="p-6 bg-red-50 rounded-xl border border-red-200 flex items-center gap-4">
+        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div class="text-red-600">{{ error }}</div>
       </div>
     </div>
 
     <!-- Рецепт не найден -->
     <div v-else-if="!recipe" class="container mx-auto px-4 py-8">
-      <EmptyState
-        title="Рецепт не найден"
-        description="Попробуйте найти другой рецепт"
-      />
+      <div class="text-center py-20">
+        <div class="mb-8 text-9xl text-gray-200">🍳</div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Рецепт не найден</h1>
+        <p class="text-gray-600">Попробуйте найти другой рецепт</p>
+      </div>
     </div>
 
     <!-- Рецепт -->
     <div v-else class="pb-16">
-      <!-- Герой-секция с изображением -->
-      <div class="relative h-[70vh] min-h-[500px] w-full overflow-hidden">
-        <div v-if="recipe.image_url" class="absolute inset-0">
-          <img :src="recipe.image_url" :alt="recipe.title" class="w-full h-full object-cover transform scale-105 transition-transform duration-10000 hover:scale-110" />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-        </div>
-        <div v-else class="absolute inset-0 bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-          <span class="text-9xl text-white opacity-20 font-serif">{{ recipe.title.charAt(0) }}</span>
+      <!-- Герой-секция -->
+      <div class="relative h-96 bg-gray-900 overflow-hidden">
+        <div class="absolute inset-0 opacity-90">
+          <img v-if="recipe.image_url" :src="recipe.image_url" class="w-full h-full object-cover transform scale-110 blur-sm"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent"></div>
         </div>
         
-        <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
-          <div class="container mx-auto">
-            <div class="flex flex-wrap items-center gap-3 mb-4">
-              <div class="badge bg-primary border-none text-white px-5 py-3 text-base font-medium shadow-lg">{{ recipe.country?.name || 'Не указана' }}</div>
-              <div class="badge bg-secondary border-none text-white px-5 py-3 text-base font-medium shadow-lg">{{ recipe.cooking_time }} мин</div>
-              <div class="badge bg-accent border-none text-white px-5 py-3 text-base font-medium shadow-lg">{{ recipe.servings }} порций</div>
+        <div class="relative h-full flex items-end pb-12 container mx-auto px-4">
+          <div class="max-w-4xl">
+            <div class="flex gap-3 mb-6">
+              <div class="px-4 py-2 bg-white/10 backdrop-blur rounded-full text-sm text-white">
+                🕒 {{ recipe.cooking_time }} мин
+              </div>
+              <div class="px-4 py-2 bg-white/10 backdrop-blur rounded-full text-sm text-white">
+                👨🍳 {{ recipe.servings }} порций
+              </div>
             </div>
-            <h1 class="text-5xl md:text-6xl font-bold mb-6 font-serif text-white drop-shadow-lg">{{ recipe.title }}</h1>
+            <h1 class="text-5xl font-bold text-white mb-6">{{ recipe.title }}</h1>
             <div class="flex items-center gap-4">
-              <div class="avatar placeholder">
-                <div class="bg-neutral text-neutral-content rounded-full w-14 h-14 ring-2 ring-white shadow-lg">
-                  <span class="text-2xl">{{ recipe.author?.name?.charAt(0) || 'U' }}</span>
-                </div>
+              <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
+                <span class="text-white text-xl">{{ recipe.author?.name?.charAt(0) || 'U' }}</span>
               </div>
               <div>
-                <p class="font-medium text-xl text-white drop-shadow-md">{{ recipe.author?.name || 'Пользователь' }}</p>
+                <p class="text-white font-medium">{{ recipe.author?.name || 'Пользователь' }}</p>
                 <p class="text-sm text-white/80">{{ new Date(recipe.created_at).toLocaleDateString() }}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       <!-- Основной контент -->
-      <div class="container mx-auto px-4 -mt-16 relative z-10">
-        <div class="flex flex-col lg:flex-row gap-8">
-          <!-- Левая колонка: описание и кнопки -->
-          <div class="lg:w-1/3 space-y-6">
+      <div class="container mx-auto px-4 mt-12">
+        <div class="grid lg:grid-cols-3 gap-8">
+          <!-- Левая колонка -->
+          <div class="lg:col-span-1 space-y-8">
+            <!-- Действия -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <button @click="handleToggleFavorite" 
+                class="w-full flex items-center justify-center gap-2 py-4 rounded-xl transition-all"
+                :class="isFavorite ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                {{ isFavorite ? 'В избранном' : 'Добавить в избранное' }}
+              </button>
+
+              <button v-if="user && user.id === recipe.author.id" 
+                @click="handleDeleteRecipe"
+                class="w-full mt-4 flex items-center justify-center gap-2 py-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Удалить рецепт
+              </button>
+            </div>
+
+            <!-- Ингредиенты -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">🥕</span>
+                Ингредиенты
+              </h2>
+              <ul class="space-y-4">
+                <li v-for="(ingredient, index) in recipe.ingredients" :key="index" 
+                  class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <span class="text-blue-600 font-bold">#{{ index + 1 }}</span>
+                  <span class="flex-grow">{{ ingredient.name }}</span>
+                  <span class="text-gray-600 font-medium">{{ ingredient.amount }} {{ ingredient.unit }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Правая колонка -->
+          <div class="lg:col-span-2 space-y-8">
             <!-- Описание -->
-            <div class="card bg-white shadow-xl rounded-2xl border border-base-200">
-              <div class="card-body p-6">
-                <h2 class="card-title text-xl font-bold flex items-center gap-2 text-primary">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Описание
-                </h2>
-                <div class="divider my-2"></div>
-                <p class="text-lg leading-relaxed text-gray-700">{{ recipe.description }}</p>
-                
-                <div class="divider my-4"></div>
-                
-                <div class="flex flex-col gap-4">
-                  <button
-                    class="btn bg-blue-600 hover:bg-blue-700 bg-gradient-to-r from-primary to-primary-focus border-none text-white w-full h-14 text-lg rounded-md shadow-lg hover:shadow-xl transition-all"
-                    @click="handleToggleFavorite"
-                  >
-                    <span v-if="isFavorite" class="text-yellow-300 text-2xl mr-2">★</span>
-                    <span v-else class="text-2xl mr-2">☆</span>
-                    {{ isFavorite ? 'В избранном' : 'В избранное' }}
-                  </button>
-                  
-                  <button
-                    v-if="user && user.id === recipe.author.id"
-                    class="btn bg-gradient-to-r from-error to-error-focus border-none text-white w-full h-14 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all"
-                    @click="handleDeleteRecipe"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
-                    Удалить рецепт
-                  </button>
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">📝</span>
+                Описание
+              </h2>
+              <p class="text-gray-600 leading-relaxed">{{ recipe.description }}</p>
+            </div>
+
+            <!-- Шаги приготовления -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">👨🍳</span>
+                Приготовление
+              </h2>
+              <div class="space-y-8">
+                <div v-for="(step, index) in recipe.steps" :key="index" class="flex gap-6">
+                  <div class="flex-shrink-0">
+                    <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">
+                      {{ index + 1 }}
+                    </div>
+                  </div>
+                  <div class="flex-grow">
+                    <p class="text-gray-600 mb-4">{{ step.description }}</p>
+                    <img v-if="step.image_url" :src="step.image_url" class="rounded-xl border border-gray-100">
+                  </div>
                 </div>
               </div>
             </div>
-            
-            <!-- Ингредиенты -->
-            <div class="card bg-white shadow-xl rounded-2xl border border-base-200 sticky top-4">
-              <div class="card-body p-6">
-                <h2 class="card-title text-xl font-bold flex items-center gap-2 text-secondary">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  Ингредиенты
-                </h2>
-                <div class="divider my-2"></div>
-                <ul class="space-y-4">
-                  <li v-for="(ingredient, index) in recipe.ingredients" :key="index" class="flex items-center gap-4 p-4 rounded-xl hover:bg-base-200 transition-colors border border-base-200">
-                    <div class="w-4 h-4 rounded-full bg-secondary flex items-center justify-center">
-                      <span class="text-white text-xs font-bold">{{ index + 1 }}</span>
-                    </div>
-                    <span class="font-medium flex-grow text-lg text-gray-700">{{ ingredient.name }}</span>
-                    <span class="text-secondary font-bold whitespace-nowrap text-lg px-3 py-1 bg-secondary/10 rounded-lg">{{ ingredient.amount }} {{ ingredient.unit }}</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Правая колонка: шаги приготовления -->
-          <div class="lg:w-2/3 space-y-6">
-            <!-- Шаги приготовления -->
-            <div class="card bg-white shadow-xl rounded-2xl border border-base-200">
-              <div class="card-body p-6">
-                <h2 class="card-title text-xl font-bold flex items-center gap-2 text-accent">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                  Шаги приготовления
-                </h2>
-                <div class="divider my-2"></div>
-                <ol class="space-y-10">
-                  <li v-for="(step, index) in recipe.steps" :key="index" class="flex gap-6">
-                    <div class="flex-shrink-0 w-14 h-14 rounded-full bg-gradient-to-br from-accent to-accent-focus text-white flex items-center justify-center font-bold text-xl shadow-lg ring-2 ring-white">
-                      {{ index + 1 }}
-                    </div>
-                    <div class="flex-grow">
-                      <p class="text-xl mb-4 leading-relaxed text-gray-700">{{ step.description }}</p>
-                      <div v-if="step.image_url" class="rounded-2xl overflow-hidden shadow-lg border-4 border-white">
-                        <img :src="step.image_url" :alt="`Шаг ${index + 1}`" class="w-full h-auto max-h-96 object-cover" />
-                      </div>
-                    </div>
-                  </li>
-                </ol>
-              </div>
-            </div>
-            
+
             <!-- Теги -->
-            <div class="card bg-white shadow-xl rounded-2xl border border-base-200">
-              <div class="card-body p-6">
-                <h2 class="card-title text-xl font-bold flex items-center gap-2 text-primary">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                  Теги
-                </h2>
-                <div class="divider my-2"></div>
-                <div class="flex flex-wrap gap-3">
-                  <div v-for="(tag, index) in recipe.tags" :key="index" class="badge bg-primary/10 text-primary border-none px-5 py-3 text-base font-medium rounded-xl">
-                    {{ tag.name }}
-                  </div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-8 h-8 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center">🏷</span>
+                Теги
+              </h2>
+              <div class="flex flex-wrap gap-2">
+                <div v-for="(tag, index) in recipe.tags" :key="index" 
+                  class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                  {{ tag.name }}
                 </div>
               </div>
             </div>
@@ -177,6 +158,7 @@
 </template>
 
 <script setup lang="ts">
+// Логика остается без изменений
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
@@ -184,7 +166,6 @@ import { useRecipes } from '~/composables/useRecipes'
 import { useFavorites } from '~/composables/useFavorites'
 import { useNotifications } from '~/composables/useNotifications'
 import type { Recipe } from '~/composables/useRecipes'
-import EmptyState from '~/components/EmptyState.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -204,12 +185,12 @@ const handleToggleFavorite = async () => {
   
   try {
     await toggleFavoriteApi(recipe.value)
-    // Обновляем состояние рецепта
     if (recipe.value) {
       recipe.value.is_favorite = !recipe.value.is_favorite
     }
-  } catch (e) {
-    console.error('Error toggling favorite:', e)
+    showSuccess(recipe.value.is_favorite ? 'Рецепт добавлен в избранное' : 'Рецепт удален из избранного')
+  } catch (err) {
+    showError('Не удалось обновить статус избранного')
   }
 }
 
@@ -233,7 +214,7 @@ const loadRecipeData = async () => {
     const recipeId = Number(route.params.id)
     const recipeData = await loadRecipe(recipeId)
     recipe.value = recipeData
-    await loadFavorites() // Загружаем список избранного для проверки статуса
+    await loadFavorites()
     if (recipe.value) {
       recipe.value.is_favorite = favorites.value.some(f => f.id === recipeId)
     }
@@ -248,4 +229,21 @@ const loadRecipeData = async () => {
 onMounted(() => {
   loadRecipeData()
 })
-</script> 
+</script>
+
+<style>
+.loading-spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 4px solid #111827;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

@@ -17,15 +17,6 @@
       />
       <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
       
-      <!-- Кнопка избранного -->
-      <button 
-        @click="handleToggleFavorite"
-        class="absolute top-4 right-4 z-10 btn btn-circle btn-ghost bg-transparent text-2xl transition-all duration-300"
-        :class="{ 'text-yellow-400': recipe.is_favorite }"
-      >
-        {{ recipe.is_favorite ? '★' : '☆' }}
-        <span class="text-sm ml-1">{{ recipe.favorites_count || 0 }}</span>
-      </button>
       <div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
         <div>
           <h2 class="card-title text-2xl font-bold text-white mb-3 drop-shadow-md">{{ recipe.title }}</h2>
@@ -65,7 +56,7 @@
               {{ tag.name }}
           </span>
       </div>
-      <div class="card-actions justify-between items-center mt-2 pt-4 border-t border-gray-100">
+      <div class="card-actions flex justify-between items-center mt-2 pt-4 border-t border-gray-100 w-full">
           <button
               class="group relative inline-flex items-center justify-center px-6 py-2.5 overflow-hidden font-medium text-white rounded-md bg-blue-600 hover:bg-blue-700 transition-all duration-300 ease-out shadow-md hover:shadow-lg"
               @click="router.push(`/recipes/${recipe.id}`)"
@@ -79,6 +70,17 @@
                   Подробнее
               </span>
               <span class="relative invisible">Подробнее</span>
+          </button>
+          <!-- Кнопка избранного -->
+          <button 
+            @click="handleToggleFavorite"
+            class="flex items-center btn btn-circle btn-ghost bg-transparent text-2xl transition-all duration-300"
+            :class="{ 'text-yellow-400': recipe.is_favorite }"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" :class="{ 'fill-current': recipe.is_favorite }" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            <span v-if="recipe.favorites_count !== undefined && recipe.favorites_count > 0" class="text-sm ml-1">{{ recipe.favorites_count }}</span>
           </button>
       </div>
     </div>
