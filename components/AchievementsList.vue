@@ -1,4 +1,4 @@
-<template>
+<!--<template>
   <div class="achievements-container">
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
@@ -150,4 +150,4 @@ onMounted(async () => {
 .achievement-card {
   animation: fadeIn 0.5s ease-out;
 }
-</style> 
+</style>-->
