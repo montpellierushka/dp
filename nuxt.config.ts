@@ -23,6 +23,16 @@ export default defineNuxtConfig({
     },
   },
 
+  nitro: {
+    devProxy: {
+      '/api': {
+        target: 'https://montpellierushka-backend-7c0b.twc1.net',
+        changeOrigin: true,
+        prependPath: true,
+      }
+    }
+  },
+
   typescript: {
     strict: true,
     typeCheck: true,
